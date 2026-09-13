@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from django.conf import settings
 
-RENDITION_WIDTHS = (480, 800, 1200, 1600)
+RENDITION_WIDTHS = (480, 800, 1200, 1600, 2400)
 NAMED_RENDITIONS = {
     "thumb": "width-480",
     "medium": "width-800",

@@ -126,6 +126,10 @@ class HeroBlock(SectionBlock):
     )
     body = blocks.TextBlock(required=False)
     image = ImageBlock(help_text="The product, ideally on a dark background.")
+    mobile_image = APIImageChooserBlock(
+        required=False,
+        help_text="Optional portrait (4:5) art direction for phones. Falls back to the main image.",
+    )
     primary_cta = LinkBlock()
     secondary_cta = LinkBlock(required=False)
     scroll_hint = blocks.CharBlock(required=False, default="Scroll")

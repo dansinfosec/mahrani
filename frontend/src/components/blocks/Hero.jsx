@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 
+import { classNames } from '../../lib/format.js'
 import { parseHeading } from '../../lib/heading.js'
 import { EASE_OUT } from '../../lib/motion.js'
 import { useSite } from '../../site/SiteContext.jsx'
@@ -11,6 +12,10 @@ import Picture from '../ui/Picture.jsx'
  * Campaign hero. The CMS tagline ("BEAUTY IN EVERY LAYER") becomes the display
  * statement, set as three lines: first word / middle words in italic / last
  * word. The CMS headline becomes the small editorial line beneath it.
+ *
+ * Imagery: the main image is the landscape campaign master (product on the
+ * right, negative space on the left for type). An optional `mobile_image`
+ * (portrait, empty upper band) is art-directed in for phones and tablets.
  */
 function splitTagline(tagline) {
   const words = String(tagline || '')
@@ -22,12 +27,24 @@ function splitTagline(tagline) {
   return [[words[0]], words.slice(1, -1), [words[words.length - 1]]]
 }
 
-export default function Hero({ anchor_id, eyebrow, title, tagline, headline, body, image, primary_cta, secondary_cta, scroll_hint }) {
+export default function Hero({
+  anchor_id,
+  eyebrow,
+  title,
+  tagline,
+  headline,
+  body,
+  image,
+  mobile_image,
+  primary_cta,
+  secondary_cta,
+  scroll_hint,
+}) {
   const { site } = useSite()
   const ref = useRef(null)
   const reduceMotion = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', reduceMotion ? '0%' : '12%'])
+  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', reduceMotion ? '0%' : '10%'])
   const copyY = useTransform(scrollYProgress, [0, 1], ['0%', reduceMotion ? '0%' : '-6%'])
   const fadeOut = useTransform(scrollYProgress, [0, 0.6], [1, 0])
 
@@ -47,8 +64,28 @@ export default function Hero({ anchor_id, eyebrow, title, tagline, headline, bod
         }
 
   return (
-    <section className="hero bleed" id={anchor_id || undefined} ref={ref} aria-labelledby="hero-title">
-      <div className="hero__bg" aria-hidden="true" />
+    <section
+      className={classNames('hero bleed', mobile_image && 'hero--art-directed')}
+      id={anchor_id || undefined}
+      ref={ref}
+      aria-labelledby="hero-title"
+    >
+      <motion.div
+        className="hero__media"
+        style={{ y: imageY }}
+        initial={reduceMotion ? false : { opacity: 0, scale: 1.04 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.9, ease: EASE_OUT, delay: 0.15 }}
+      >
+        <Picture
+          image={image}
+          className="hero__image"
+          priority
+          sizes="100vw"
+          sources={mobile_image ? [{ image: mobile_image, media: '(max-width: 1023px)', sizes: '100vw' }] : []}
+        />
+        <div className="hero__shade" aria-hidden="true" />
+      </motion.div>
 
       <motion.div className="hero__copy" style={{ y: copyY }}>
         {eyebrow || collaboration ? (
@@ -89,22 +126,11 @@ export default function Hero({ anchor_id, eyebrow, title, tagline, headline, bod
             ))}
           </motion.p>
         ) : null}
-
-        <motion.div className="hero__actions" {...enter(0.8)}>
-          <CmsButton link={primary_cta} size="lg" />
-          <CmsButton link={secondary_cta} variant="text" />
-        </motion.div>
       </motion.div>
 
-      <motion.div
-        className="hero__media"
-        style={{ y: imageY }}
-        initial={reduceMotion ? false : { opacity: 0, scale: 1.04 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.9, ease: EASE_OUT, delay: 0.15 }}
-      >
-        <div className="hero__halo" aria-hidden="true" />
-        <Picture image={image} className="hero__image" priority sizes="(min-width: 1024px) 40vw, 86vw" />
+      <motion.div className="hero__actions" {...enter(0.8)}>
+        <CmsButton link={primary_cta} size="lg" />
+        <CmsButton link={secondary_cta} variant="text" />
       </motion.div>
 
       <motion.aside className="hero__meta" {...enter(0.9)}>
