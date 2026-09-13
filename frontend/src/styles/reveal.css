@@ -1,0 +1,228 @@
+/* =================================================================
+   PRODUCT REVEAL — scroll-driven stage sequence
+   The section is tall (stages × 100vh); the stage viewport is sticky.
+   Stage media is a stack of absolutely positioned layers; today these
+   are still images, later they can be sequences, video or WebGL.
+   ================================================================= */
+.reveal {
+  position: relative;
+  --reveal-stages: 5;
+  height: calc(var(--reveal-stages) * 100svh);
+  background: linear-gradient(180deg, var(--background-2), var(--background) 30%, var(--background) 70%, var(--background-2));
+}
+
+.reveal__viewport {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding-top: var(--header-h);
+  overflow: hidden;
+}
+
+.reveal__head {
+  padding-top: 1.25rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.reveal__heading {
+  font-size: clamp(2rem, 5.5vw, 5.5rem);
+}
+
+.reveal__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.reveal__halo {
+  position: absolute;
+  width: min(80vw, 34rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 217, 166, 0.28), rgba(201, 160, 126, 0.1) 45%, transparent 72%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s var(--ease-out);
+}
+
+.reveal__halo--on {
+  opacity: 1;
+}
+
+.reveal__frame {
+  position: relative;
+  height: min(100%, 62svh);
+  aspect-ratio: 3 / 4;
+  max-width: 100%;
+}
+
+.reveal__layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transform: scale(1.04);
+  transition:
+    opacity 0.9s var(--ease-out),
+    transform 1.6s var(--ease-out);
+  will-change: opacity, transform;
+}
+
+.reveal__layer--active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.reveal__layer img {
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  -webkit-mask-image: radial-gradient(ellipse 68% 64% at 50% 50%, #000 55%, rgba(0, 0, 0, 0.6) 76%, transparent 98%);
+  mask-image: radial-gradient(ellipse 68% 64% at 50% 50%, #000 55%, rgba(0, 0, 0, 0.6) 76%, transparent 98%);
+}
+
+.reveal__foot {
+  display: grid;
+  gap: 1rem;
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  min-height: 7.5rem;
+}
+
+.reveal__caption {
+  font-family: var(--serif);
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  line-height: 1.25;
+  color: var(--ivory);
+  max-width: 28ch;
+  text-wrap: balance;
+}
+
+.reveal__rail {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.reveal__dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text-subtle);
+  font-size: 0.62rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  transition: color var(--dur-fast);
+}
+
+.reveal__dot::before {
+  content: '';
+  width: 1.25rem;
+  height: 1px;
+  background: currentColor;
+  transition: width var(--dur) var(--ease-out), background-color var(--dur-fast);
+}
+
+.reveal__dot--active {
+  color: var(--accent-light);
+}
+
+.reveal__dot--active::before {
+  width: 2.5rem;
+  background: var(--accent);
+}
+
+.reveal__dot-label {
+  display: none;
+}
+
+.reveal__dot--active .reveal__dot-label {
+  display: inline;
+}
+
+.reveal__progress {
+  height: 1px;
+  background: var(--border);
+  position: relative;
+}
+
+.reveal__progress-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  background: var(--accent);
+  transform-origin: left;
+}
+
+/* Static fallback (reduced motion or unsupported mode) */
+.reveal--static {
+  height: auto;
+}
+
+.reveal__static-grid {
+  display: grid;
+  gap: 2rem;
+  padding-block: 2rem 4rem;
+}
+
+.reveal__static-item {
+  display: grid;
+  gap: 1rem;
+  text-align: center;
+  justify-items: center;
+}
+
+.reveal__static-item img {
+  max-height: 60vh;
+  width: auto;
+}
+
+@media (min-width: 768px) {
+  .reveal__dot-label {
+    display: inline;
+  }
+
+  .reveal__static-grid {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .reveal__viewport {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-rows: 1fr;
+    align-items: center;
+    gap: 2rem;
+    padding-bottom: 0;
+  }
+
+  .reveal__head {
+    padding-top: 0;
+    align-self: center;
+  }
+
+  .reveal__stage {
+    height: 100%;
+  }
+
+  .reveal__frame {
+    height: min(100%, 76svh);
+  }
+
+  .reveal__foot {
+    align-self: center;
+    padding-bottom: 0;
+  }
+
+  .reveal__rail {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}

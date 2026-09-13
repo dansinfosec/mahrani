@@ -1,0 +1,10 @@
+Django>=5.2,<5.3
+wagtail>=7.0,<7.1
+djangorestframework>=3.16,<3.17
+django-cors-headers>=4.7
+django-environ>=0.12
+psycopg[binary]>=3.2
+gunicorn>=23.0
+whitenoise>=6.9
+Pillow>=11.0
+django-storages[s3]>=1.14

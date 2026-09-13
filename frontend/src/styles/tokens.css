@@ -1,0 +1,63 @@
+/* ------------------------------------------------------------------
+   MAHARANI design tokens
+   Palette extracted from the campaign reference: black lacquer, warm
+   brown-black, rose gold, champagne, ivory and the warm LED glow.
+   Contrast checked against --background (all text ≥ 7:1 except --text-subtle
+   which is reserved for decorative/large text).
+   ------------------------------------------------------------------ */
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --background: #0a0807;
+  --background-2: #0f0b09;
+  --surface: #17110e;
+  --surface-2: #211813;
+  --surface-3: #2c2019;
+
+  /* Text */
+  --text: #f3eadf;
+  --text-muted: #ab9f92;
+  --text-subtle: #7d7167;
+  --ivory: #f8f2e9;
+  --on-accent: #16100c;
+
+  /* Metallics */
+  --accent: #c9a07e;        /* rose gold */
+  --accent-light: #e9cfb4;  /* champagne */
+  --accent-deep: #9c6b4c;   /* bronze */
+  --glow: #ffd9a6;          /* LED warmth */
+
+  --border: rgba(233, 207, 180, 0.14);
+  --border-strong: rgba(233, 207, 180, 0.36);
+
+  /* Type */
+  --serif: 'Cormorant Garamond', 'Times New Roman', Georgia, serif;
+  --display: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* Layout */
+  --container: 1440px;
+  --container-narrow: 1120px;
+  --gutter: clamp(1.25rem, 4vw, 4.5rem);
+  --header-h: 4.5rem;
+  --section-y: clamp(5rem, 11vw, 10rem);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 0.3s;
+  --dur: 0.7s;
+  --dur-slow: 1.2s;
+
+  /* Radii */
+  --radius-sm: 2px;
+  --radius: 4px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --header-h: 5.25rem;
+  }
+}

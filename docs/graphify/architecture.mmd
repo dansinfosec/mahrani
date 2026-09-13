@@ -1,0 +1,57 @@
+%% MAHARANI — deployment and service architecture
+%% Render with any Mermaid viewer (GitHub, VS Code, mermaid.live).
+flowchart TB
+    Browser["Browser<br/>(customer / editor)"]
+
+    subgraph Vercel["Vercel — frontend"]
+        React["React 19 SPA<br/>Vite build · React Router · Framer Motion<br/>vercel.json SPA rewrite"]
+    end
+
+    subgraph Railway["Railway — backend"]
+        direction TB
+        Gunicorn["gunicorn (start.sh)<br/>migrate → collectstatic → serve<br/>health: /health/"]
+        subgraph Django["Django 5.2 + DRF"]
+            direction LR
+            API["/api/v1 · /api/v2<br/>DRF views + serializers"]
+            Wagtail["Wagtail 7 (cms)<br/>HomePage · StandardPage<br/>SiteSettings · StreamField · Images<br/>/admin/"]
+            subgraph Commerce["Commerce apps"]
+                direction TB
+                Catalog["catalog<br/>Product + variants,<br/>images, features, specs, layers"]
+                Cart["cart<br/>Cart · CartItem<br/>X-Cart-Token"]
+                Shipping["shipping<br/>ShippingMethod"]
+                Orders["orders<br/>Order · OrderItem"]
+                Customers["customers<br/>Customer · Address"]
+                Payments["payments<br/>Payment (records only)"]
+            end
+        end
+        Static["WhiteNoise<br/>static files"]
+        Volume[("Railway volume<br/>MEDIA_ROOT")]
+        Postgres[("Railway PostgreSQL<br/>DATABASE_URL")]
+    end
+
+    R2[("S3 / Cloudflare R2<br/>optional media (AWS_*)")]
+    Fonts["Google Fonts<br/>Cinzel · Cormorant · Jost"]
+
+    Browser -- "HTTPS" --> React
+    Browser -- "HTTPS /admin/" --> Gunicorn
+    React -- "fetch JSON<br/>VITE_API_BASE_URL" --> Gunicorn
+    React -. "fonts" .-> Fonts
+    Gunicorn --> API
+    Gunicorn --> Wagtail
+    Gunicorn --> Static
+    API -- "serializes" --> Wagtail
+    API -- "serializes / manages" --> Catalog
+    API -- "manages" --> Cart
+    API -- "serializes" --> Shipping
+    Wagtail -- "product chooser<br/>(blocks reference products)" --> Catalog
+    Cart -- "lines reference" --> Catalog
+    Orders -. "Phase 2: cart → order" .-> Cart
+    Orders --> Customers
+    Orders --> Shipping
+    Payments --> Orders
+    Django -- "ORM" --> Postgres
+    Wagtail -- "uploads" --> Volume
+    Wagtail -. "or" .-> R2
+
+    classDef phase2 stroke-dasharray: 4 3,color:#7d7167;
+    class Orders,Customers,Payments phase2;

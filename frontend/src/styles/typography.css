@@ -1,0 +1,157 @@
+/* Editorial type scale. Serif carries the campaign voice; sans carries UI. */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.6875rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 1.75rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.eyebrow--plain::before {
+  display: none;
+}
+
+.display-xl,
+.display,
+.h2,
+.h3 {
+  font-family: var(--serif);
+  font-weight: 300;
+  color: var(--ivory);
+  text-wrap: balance;
+}
+
+.display-xl {
+  font-size: clamp(3.25rem, 9.5vw, 10rem);
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+}
+
+.display {
+  font-size: clamp(2.75rem, 6.6vw, 7rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.h2 {
+  font-size: clamp(2.25rem, 4.6vw, 4.75rem);
+  line-height: 1.02;
+}
+
+.h3 {
+  font-size: clamp(1.625rem, 2.6vw, 2.5rem);
+  line-height: 1.1;
+}
+
+.display-xl em,
+.display em,
+.h2 em,
+.h3 em,
+.serif-italic {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--accent-light);
+}
+
+.wordmark {
+  font-family: var(--display);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ivory);
+}
+
+.lede {
+  font-family: var(--serif);
+  font-size: clamp(1.25rem, 1.8vw, 1.625rem);
+  line-height: 1.45;
+  font-weight: 300;
+  color: var(--text);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.caps {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* Rich text from Wagtail */
+.prose {
+  color: var(--text-muted);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  max-width: 38rem;
+}
+
+.prose p + p {
+  margin-top: 1.25em;
+}
+
+.prose a {
+  color: var(--accent-light);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: rgba(233, 207, 180, 0.4);
+  transition: text-decoration-color var(--dur-fast);
+}
+
+.prose a:hover {
+  text-decoration-color: var(--accent-light);
+}
+
+.prose b,
+.prose strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.prose ul,
+.prose ol {
+  margin: 1.25em 0;
+  padding-left: 1.25em;
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li + li {
+  margin-top: 0.4em;
+}
+
+/* Masked line reveal used by <Heading> */
+.lines {
+  display: block;
+}
+
+.lines__line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.lines__inner {
+  display: block;
+  will-change: transform;
+}

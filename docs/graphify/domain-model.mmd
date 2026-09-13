@@ -1,0 +1,159 @@
+%% MAHARANI — Django domain model (fields abbreviated; see backend/*/models.py)
+erDiagram
+    HomePage {
+        StreamField body
+        string seo_title
+        string search_description
+        string og_title
+        string og_description
+        string canonical_url
+        bool no_index
+    }
+    StandardPage {
+        string intro
+        StreamField body
+    }
+    SiteSettings {
+        string brand_name
+        string tagline
+        StreamField navigation
+        bool collaboration_enabled
+        string collaboration_partner_name
+        string collaboration_disclaimer
+        StreamField footer_links
+        string seo_title_suffix
+    }
+    WagtailImage {
+        string title
+        string description
+        int width
+        int height
+    }
+    Product {
+        string name
+        string slug UK
+        string product_type
+        decimal price
+        decimal compare_at_price
+        string currency
+        string sku UK
+        int stock_quantity
+        bool is_active
+        bool is_featured
+        decimal height_cm
+        decimal width_cm
+        decimal depth_cm
+        text materials
+        richtext shipping_information
+    }
+    ProductImage {
+        string alt_text
+        string caption
+        int sort_order
+    }
+    ProductFeature {
+        string icon
+        string title
+        string description
+    }
+    ProductSpecification {
+        string label
+        string value
+    }
+    ProductLayer {
+        int number
+        string name
+        string title
+        text contents
+    }
+    ProductVariant {
+        string name
+        string sku UK
+        decimal price
+        int stock_quantity
+        bool is_active
+    }
+    Cart {
+        uuid token UK
+        string currency
+        string status
+    }
+    CartItem {
+        int quantity
+        decimal unit_price
+    }
+    Order {
+        string number UK
+        string status
+        string email
+        decimal subtotal
+        decimal shipping_total
+        decimal total
+        string shipping_country
+    }
+    OrderItem {
+        string product_name
+        string sku
+        decimal unit_price
+        int quantity
+    }
+    Customer {
+        string email UK
+        string first_name
+        string last_name
+        bool accepts_marketing
+    }
+    Address {
+        string line1
+        string city
+        string country
+        bool is_default
+    }
+    Payment {
+        string provider
+        string status
+        decimal amount
+        string provider_reference
+    }
+    ShippingMethod {
+        string name
+        decimal price
+        int estimated_min_days
+        int estimated_max_days
+        string countries
+        bool is_active
+    }
+    User {
+        string username
+    }
+
+    HomePage ||--o{ StandardPage : "parent of"
+    HomePage }o--o| WagtailImage : og_image
+    SiteSettings }o--o| Product : featured_product
+    SiteSettings }o--o| WagtailImage : "collaboration_logo / default_og_image"
+    HomePage }o--o{ Product : "blocks reference (chooser)"
+
+    Product ||--o{ ProductImage : gallery
+    Product ||--o{ ProductFeature : features
+    Product ||--o{ ProductSpecification : specifications
+    Product ||--o{ ProductLayer : layers
+    Product ||--o{ ProductVariant : variants
+    Product }o--o| WagtailImage : primary_image
+    ProductImage }o--|| WagtailImage : image
+    ProductLayer }o--o| WagtailImage : image
+
+    Cart ||--o{ CartItem : items
+    Cart }o--o| Customer : customer
+    CartItem }o--|| Product : product
+    CartItem }o--o| ProductVariant : variant
+
+    Order ||--o{ OrderItem : items
+    Order }o--o| Customer : customer
+    Order |o--o| Cart : "converted from"
+    Order }o--o| ShippingMethod : shipping_method
+    OrderItem }o--o| Product : product
+    OrderItem }o--o| ProductVariant : variant
+    Payment }o--|| Order : order
+
+    Customer ||--o{ Address : addresses
+    Customer |o--o| User : user
