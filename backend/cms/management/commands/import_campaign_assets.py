@@ -8,14 +8,18 @@ crown + MAHARANI mark) and audited before being committed. The masters live
 in the repository so a lost media volume can always be restored by re-running
 this command.
 
-Idempotent: re-running replaces the existing Wagtail images (new rows, so no
-web process keeps serving stale cached renditions) and reassigns them.
+Idempotent: each master is stored under a content-hashed filename. A row whose
+file already matches is kept; anything else with the same title is replaced by
+a new row (fresh per-process rendition caches) and its file removed. Because
+old and new filenames never coincide, Wagtail's deferred file deletion can
+never remove a file that was just written.
 
     python manage.py import_campaign_assets
     python manage.py import_campaign_assets --dry-run
     python manage.py import_campaign_assets --keep-home   # assets only
 """
 
+import hashlib
 from pathlib import Path
 
 from django.conf import settings
@@ -168,23 +172,47 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
     def import_image(self, filename: str, title: str, alt: str, dry: bool):
         path = CAMPAIGN_DIR / filename
+        data = path.read_bytes()
         with PILImage.open(path) as pil:
             width, height = pil.size
+        digest = hashlib.sha1(data).hexdigest()[:10]
+        stem, ext = filename.rsplit(".", 1)
+        stored_name = f"{stem}.{digest}.{ext}"
+
         existing = list(Image.objects.filter(title=title))
-        self.stdout.write(f"{'Replaced' if existing else 'Created'} image: {title} ({width}x{height})")
+        keep = next(
+            (
+                img
+                for img in existing
+                if stored_name.rsplit(".", 1)[0] in img.file.name and img.file.storage.exists(img.file.name)
+            ),
+            None,
+        )
+        stale = [img for img in existing if keep is None or img.pk != keep.pk]
+
+        if keep is not None:
+            self.stdout.write(f"Kept image: {title} ({width}x{height})")
+        else:
+            self.stdout.write(f"{'Replaced' if existing else 'Created'} image: {title} ({width}x{height})")
         if dry:
-            return existing[0] if existing else None
+            return keep or (existing[0] if existing else None)
+
         # Replace rather than update: Wagtail caches renditions per image pk in
         # each web process, so updating a row in place leaves running workers
-        # serving rendition URLs whose files no longer exist. A fresh row gets
-        # fresh cache keys; deleting the old row removes its file and renditions.
-        for old in existing:
+        # serving rendition URLs whose files no longer exist. The old rows' files
+        # are removed by Wagtail at commit; their names differ from the new one.
+        for old in stale:
             old.delete()
+        if keep is not None:
+            if hasattr(keep, "description") and keep.description != alt:
+                keep.description = alt
+                keep.save(update_fields=["description"])
+            return keep
+
         image = Image(title=title)
         if hasattr(image, "description"):
             image.description = alt
-        with open(path, "rb") as fh:
-            image.file.save(filename, ContentFile(fh.read()), save=False)
+        image.file.save(stored_name, ContentFile(data), save=False)
         image.width, image.height = width, height
         image.save()
         return image
