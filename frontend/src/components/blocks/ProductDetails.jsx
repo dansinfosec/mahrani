@@ -15,9 +15,12 @@ import Reveal from '../ui/Reveal.jsx'
 export default function ProductDetails({ anchor_id, chapter, eyebrow, heading, intro, product, extra_items = [], image }) {
   const [mediaBroken, setMediaBroken] = useState(false)
   if (!product) return null
-  const rows = [...(product.specifications || []), ...extra_items]
   const media = mediaBroken ? null : image || product.primary_image
   const dims = product.dimensions
+  // The measurement figures already state the dimensions; drop that spec row here.
+  const rows = [...(product.specifications || []), ...extra_items].filter(
+    (row) => !(dims && /^dimensions$/i.test(String(row.label || '').trim())),
+  )
   const figures = dims
     ? [
         ['Thickness', dims.depth],
