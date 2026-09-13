@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { padNumber } from '../../lib/format.js'
 import Eyebrow from '../ui/Eyebrow.jsx'
 import Heading from '../ui/Heading.jsx'
 import MediaReveal from '../ui/MediaReveal.jsx'
@@ -8,11 +7,10 @@ import Picture from '../ui/Picture.jsx'
 import Reveal from '../ui/Reveal.jsx'
 
 /**
- * The compact-form chapter. The 16:9 "three centimetres" photograph runs
- * wide with the real measurements drawn on it as product-design annotations
- * (the 3 cm stack at the side, the 14.7 × 7.1 cm face beneath), and the
- * specifications read as a two-column editorial ledger under it. Everything
- * comes from the catalog Product.
+ * Compact form. One tight composition: the wide "three centimetres"
+ * photograph, the headline, and the real measurements as three large figures
+ * (thickness first, because that is the point). Specifications follow as a
+ * single hairline strip. Everything comes from the catalog Product.
  */
 export default function ProductDetails({ anchor_id, chapter, eyebrow, heading, intro, product, extra_items = [], image }) {
   const [mediaBroken, setMediaBroken] = useState(false)
@@ -20,98 +18,69 @@ export default function ProductDetails({ anchor_id, chapter, eyebrow, heading, i
   const rows = [...(product.specifications || []), ...extra_items]
   const media = mediaBroken ? null : image || product.primary_image
   const dims = product.dimensions
+  const figures = dims
+    ? [
+        ['Thickness', dims.depth],
+        ['Height', dims.height],
+        ['Width', dims.width],
+      ].filter(([, value]) => value)
+    : []
 
   return (
-    <section className="section details bleed" id={anchor_id || undefined}>
-      <div className="details__head">
+    <section className="section section--tight compact bleed" id={anchor_id || undefined}>
+      {media ? (
+        <MediaReveal className="compact__media">
+          <Picture image={media} sizes="(min-width: 1024px) 50vw, 100vw" onError={() => setMediaBroken(true)} />
+        </MediaReveal>
+      ) : null}
+
+      <div className="compact__copy">
         <Reveal>
           <Eyebrow chapter={chapter}>{eyebrow}</Eyebrow>
         </Reveal>
         <Heading as="h2" text={heading} className="h2" />
         {intro ? (
           <Reveal delay={0.15}>
-            <p className="muted measure">{intro}</p>
+            <p className="compact__intro caption">{intro}</p>
+          </Reveal>
+        ) : null}
+        {dims?.note ? (
+          <Reveal delay={0.2}>
+            <p className="compact__note">{dims.note}</p>
           </Reveal>
         ) : null}
       </div>
 
-      {media ? (
-        <div className="details__object">
-          <MediaReveal className="details__media">
-            <Picture image={media} sizes="(min-width: 1024px) 30vw, 70vw" onError={() => setMediaBroken(true)} />
-          </MediaReveal>
-          {dims ? (
-            <Reveal variant="fade" delay={0.4} className="annot" aria-hidden="true">
-              {dims.depth ? (
-                <span className="annot__rule annot__rule--height">
-                  <span className="annot__value">{dims.depth.cm} cm</span>
-                </span>
-              ) : null}
-              {dims.height ? (
-                <span className="annot__rule annot__rule--width">
-                  <span className="annot__value">{dims.height.cm} cm</span>
-                </span>
-              ) : null}
-              {dims.width ? (
-                <span className="annot__rule annot__rule--depth">
-                  <span className="annot__value">{dims.width.cm} cm</span>
-                </span>
-              ) : null}
-            </Reveal>
-          ) : null}
-        </div>
-      ) : null}
-
-      {rows.length ? (
-        <ol className="callouts" aria-label="Specifications">
-          {rows.map((row, index) => (
-            <Reveal as="li" key={`${row.label}-${index}`} className="callout" delay={index * 0.05}>
-              <span className="callout__num" aria-hidden="true">
-                {padNumber(index + 1)}
-              </span>
-              <span className="callout__label caps">{row.label}</span>
-              <span className="callout__value">{row.value}</span>
-            </Reveal>
+      {figures.length ? (
+        <Reveal as="dl" className="compact__figures" delay={0.2}>
+          {figures.map(([label, value]) => (
+            <div className="compact__figure" key={label}>
+              <dd className="compact__value">
+                {value.cm}
+                <span className="compact__unit">cm</span>
+              </dd>
+              <dt className="compact__label caps">
+                {label}
+                <span className="compact__alt">{value.in} in</span>
+              </dt>
+            </div>
           ))}
-        </ol>
+        </Reveal>
       ) : null}
 
-      <div className="details__foot">
-        {dims ? <Dimensions dimensions={dims} /> : null}
-        {product.materials ? (
-          <Reveal delay={0.1}>
-            <p className="details__materials caption">
-              <span className="caps">Materials</span> {product.materials}
-            </p>
-          </Reveal>
-        ) : null}
-      </div>
+      {rows.length || product.materials ? (
+        <Reveal as="div" variant="fade" className="compact__specs" delay={0.25}>
+          <ul className="compact__spec-list" aria-label="Specifications">
+            {rows.map((row, index) => (
+              <li key={`${row.label}-${index}`} className="compact__spec">
+                <span className="caps">{row.label}</span>
+                <span>{row.value}</span>
+              </li>
+            ))}
+          </ul>
+          {product.materials ? <p className="compact__materials caption">{product.materials}</p> : null}
+        </Reveal>
+      ) : null}
     </section>
-  )
-}
-
-function Dimensions({ dimensions }) {
-  const entries = [
-    ['Height', dimensions.height],
-    ['Width', dimensions.width],
-    ['Depth', dimensions.depth],
-  ].filter(([, value]) => value)
-  if (!entries.length) return null
-  return (
-    <Reveal as="dl" className="dims">
-      {entries.map(([label, value]) => (
-        <div className="dims__item" key={label}>
-          <dt className="caps dims__label">{label}</dt>
-          <dd className="dims__figure">
-            <span className="dims__value">
-              {value.cm}
-              <span className="dims__unit">cm</span>
-            </span>
-            <span className="dims__alt">{value.in} in</span>
-          </dd>
-        </div>
-      ))}
-      {dimensions.note ? <p className="dims__note">{dimensions.note}</p> : null}
-    </Reveal>
   )
 }

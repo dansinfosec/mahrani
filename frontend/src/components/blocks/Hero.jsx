@@ -36,7 +36,8 @@ function useMediaQuery(query) {
  *
  * Copy: `eyebrow` → campaign label, `tagline` → display statement (line
  * breaks and _italics_), `headline` → supporting line, `side_label` →
- * vertical edge line, `add_to_bag` → commerce action for the page's product.
+ * vertical edge line. "Watch the story" replays the opening; `add_to_bag`
+ * only surfaces when there is no sequence to replay.
  */
 export default function Hero({
   anchor_id,
@@ -146,8 +147,17 @@ export default function Hero({
               </motion.p>
             ) : null}
             <motion.div className="hero__actions" {...enter(1.05)}>
-              <CmsButton link={primary_cta} size="lg" />
-              {add_to_bag ? <HeroAddToBag product={context?.product} /> : <CmsButton link={secondary_cta} variant="text" />}
+              <CmsButton link={primary_cta} className="btn--arrow" />
+              {sequence ? (
+                <button type="button" className="hero__watch caps" onClick={() => setReplayKey((key) => key + 1)}>
+                  <span className="hero__watch-icon" aria-hidden="true" />
+                  {revealed ? 'Watch again' : 'Watch the story'}
+                </button>
+              ) : add_to_bag ? (
+                <HeroAddToBag product={context?.product} />
+              ) : (
+                <CmsButton link={secondary_cta} variant="text" />
+              )}
             </motion.div>
             {body ? (
               <motion.p className="hero__body caption" {...enter(1.2)}>
@@ -163,25 +173,14 @@ export default function Hero({
             </motion.p>
           ) : null}
 
-          <motion.div className="hero__foot" {...enter(1.4)}>
-            {scroll_hint ? (
+          {scroll_hint ? (
+            <motion.div className="hero__foot" {...enter(1.4)}>
               <span className={classNames('hero__scroll caps', revealed && 'hero__scroll--faded')} aria-hidden="true">
                 {scroll_hint}
                 <span className="hero__scroll-line" />
               </span>
-            ) : null}
-            {sequence ? (
-              <button
-                type="button"
-                className={classNames('hero__replay caps', !revealed && 'hero__replay--hidden')}
-                onClick={() => setReplayKey((key) => key + 1)}
-                tabIndex={revealed ? 0 : -1}
-              >
-                <span className="hero__replay-icon" aria-hidden="true" />
-                Replay
-              </button>
-            ) : null}
-          </motion.div>
+            </motion.div>
+          ) : null}
         </div>
       </div>
     </section>

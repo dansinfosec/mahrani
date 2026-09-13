@@ -40,7 +40,7 @@
   --sans: 'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   /* Type scale — six deliberate levels (see typography.css) */
-  --fs-campaign: clamp(3.1rem, 13vw, 5.5rem);   /* hero display, mobile */
+  --fs-campaign: clamp(2.9rem, 12vw, 5rem);     /* hero display, mobile */
   --fs-display: clamp(2.6rem, 10vw, 4.25rem);   /* section display, mobile */
   --fs-title: clamp(1.9rem, 6.5vw, 2.6rem);     /* section title */
   --fs-h3: clamp(1.45rem, 4.6vw, 1.85rem);
@@ -50,16 +50,16 @@
   --fs-utility: 0.68rem;
 
   /* Spacing — exactly three vertical rhythms */
-  --space-tight: clamp(1.75rem, 5vw, 4.5rem);     /* 28px → 72px */
-  --space-standard: clamp(3.5rem, 7.5vw, 7.5rem); /* 56px → 120px */
-  --space-cinematic: clamp(5.75rem, 11vw, 11rem); /* 92px → 176px */
+  --space-tight: clamp(1.5rem, 4vw, 4rem);        /* 24px → 64px */
+  --space-standard: clamp(3rem, 6.5vw, 7rem);     /* 48px → 112px */
+  --space-cinematic: clamp(5rem, 9vw, 10rem);     /* 80px → 160px */
 
   /* Layout */
   --container: 1440px;
   --container-narrow: 1120px;
   --gutter: clamp(1.25rem, 4vw, 4.5rem);
   --col-gap: clamp(0.75rem, 1.6vw, 1.75rem);
-  --header-h: 4rem;
+  --header-h: 3.5rem;
 
   /* Motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

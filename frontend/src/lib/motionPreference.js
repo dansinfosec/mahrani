@@ -1,13 +1,13 @@
 /**
  * Mirrors prefers-reduced-motion onto <html class="reduce-motion"> so CSS and
- * Framer Motion agree. In development, `?motion=1` forces full motion and
- * `?motion=0` forces reduced motion, which makes both paths reviewable on any
+ * Framer Motion agree. `?motion=1` forces full motion and `?motion=0` forces
+ * reduced motion in any environment, so both paths can be reviewed on any
  * machine regardless of the OS setting.
  */
 export function setupMotionPreference() {
   if (typeof window === 'undefined' || !window.matchMedia) return
 
-  if (import.meta.env.DEV) {
+  {
     const override = new URLSearchParams(window.location.search).get('motion')
     if (override === '1' || override === '0') {
       const forced = override === '0'
