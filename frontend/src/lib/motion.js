@@ -3,6 +3,9 @@ export const EASE_OUT = [0.16, 1, 0.3, 1]
 export const EASE_IN_OUT = [0.65, 0, 0.35, 1]
 
 export const viewportOnce = { once: true, margin: '0px 0px -12% 0px' }
+// Same thresholds for useInView(ref) — used where the animated element itself
+// would be clipped away in its hidden state (masked lines, clip reveals).
+export const inViewOptions = { once: true, margin: '0px 0px -10% 0px' }
 
 export const fadeUp = {
   hidden: { opacity: 0, y: 28 },

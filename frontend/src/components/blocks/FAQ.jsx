@@ -6,7 +6,7 @@ import Reveal from '../ui/Reveal.jsx'
 export default function FAQ({ anchor_id, eyebrow, heading, items = [] }) {
   if (!items.length) return null
   return (
-    <section className="section" id={anchor_id || undefined}>
+    <section className="section section--tight faq" id={anchor_id || undefined}>
       <div className="container faq__inner">
         <div className="faq__head">
           <Reveal>

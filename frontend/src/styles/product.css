@@ -1,7 +1,7 @@
 /* ---------- Purchase panel (shared by home + product page) ---------- */
 .panel {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.25rem;
   align-content: start;
   min-width: 0;
 }
@@ -11,29 +11,41 @@
 }
 
 .panel__name {
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 .panel__price {
-  font-size: clamp(1.75rem, 2.6vw, 2.4rem);
+  font-size: clamp(2.6rem, 8vw, 4rem);
+  line-height: 1;
 }
 
 .panel__meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1rem 2rem;
+  gap: 0.75rem 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
 }
 
 .panel__sku {
   color: var(--text-subtle);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   letter-spacing: 0.18em;
 }
 
 .panel__summary {
-  color: var(--text-muted);
-  max-width: 36rem;
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  line-height: 1.4;
+  color: var(--text);
+  max-width: 30ch;
 }
 
 .panel__variants {
@@ -65,13 +77,17 @@
 
 .panel__buy {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
   margin-top: 0.5rem;
 }
 
+.panel__buy .stepper {
+  justify-self: start;
+}
+
 .panel__buy .btn {
-  min-height: 3.25rem;
+  min-height: 3.5rem;
   white-space: normal;
   padding-inline: 1.25rem;
   text-align: center;
@@ -83,39 +99,44 @@
   color: var(--accent-light);
 }
 
+.panel__feedback:empty {
+  display: none;
+}
+
 .panel__feedback--error {
   color: #e8b4a2;
 }
 
 .panel__note {
   color: var(--text-subtle);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   line-height: 1.55;
+  max-width: 40ch;
 }
 
 .panel__shipping {
   display: grid;
-  gap: 0.9rem;
-  padding-top: 1.5rem;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--border);
 }
 
 .panel__shipping .prose {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .ship-methods {
   display: grid;
-  gap: 0.5rem;
 }
 
 .ship-method {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.88rem;
 }
 
 .ship-method__name {
@@ -124,7 +145,7 @@
 
 .ship-method__eta {
   color: var(--text-subtle);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   display: block;
 }
 
@@ -314,5 +335,52 @@
     grid-template-columns: 1fr;
     border: 0;
     padding: 0;
+  }
+}
+
+/* ---------- Specifications ledger (product page) ---------- */
+.ledger {
+  border-top: 1px solid var(--border);
+}
+
+.ledger__row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 0.2rem 1rem;
+  align-items: baseline;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ledger__num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+.ledger__cell {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.ledger__label {
+  color: var(--text-subtle);
+}
+
+.ledger__value {
+  font-family: var(--serif);
+  font-size: clamp(1.2rem, 1.6vw, 1.5rem);
+  line-height: 1.2;
+  color: var(--ivory);
+}
+
+@media (min-width: 640px) {
+  .ledger__row {
+    grid-template-columns: 2.5rem minmax(0, 12rem) 1fr;
+  }
+
+  .ledger__cell {
+    display: contents;
   }
 }

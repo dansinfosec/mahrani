@@ -14,7 +14,7 @@ export default function CTASection({ anchor_id, eyebrow, heading, body, primary_
       ) : null}
       <div className="container cta__inner">
         <Reveal>
-          <Eyebrow plain>{eyebrow}</Eyebrow>
+          <Eyebrow>{eyebrow}</Eyebrow>
         </Reveal>
         <Heading as="h2" text={heading} className="display" />
         {body ? (

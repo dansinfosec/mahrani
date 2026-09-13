@@ -38,13 +38,27 @@ const BLOCKS = {
   faq: FAQ,
 }
 
+/**
+ * Page-level context derived from the blocks themselves, so purely
+ * typographic blocks can borrow the page's product imagery for crops without
+ * the CMS having to repeat it.
+ */
+function deriveContext(blocks) {
+  const withProduct = blocks.find((block) => block.value?.product?.primary_image)
+  const hero = blocks.find((block) => block.type === 'hero' && block.value?.image)
+  return {
+    productImage: withProduct?.value.product.primary_image || hero?.value.image || null,
+  }
+}
+
 export default function BlockRenderer({ blocks = [] }) {
+  const context = deriveContext(blocks)
   return blocks.map((block, index) => {
     const Component = BLOCKS[block.type]
     if (!Component) {
       if (import.meta.env.DEV) console.warn(`No renderer for block type "${block.type}"`)
       return null
     }
-    return <Component key={block.id || index} {...block.value} index={index} />
+    return <Component key={block.id || index} {...block.value} index={index} context={context} />
   })
 }

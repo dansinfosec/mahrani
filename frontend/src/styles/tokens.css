@@ -9,9 +9,11 @@
 :root {
   color-scheme: dark;
 
-  /* Surfaces */
+  /* Surfaces: black lacquer → warm brown-black */
   --background: #0a0807;
-  --background-2: #0f0b09;
+  --background-2: #0e0a08;
+  --background-warm: #130d0a;
+  --background-deep: #060404;
   --surface: #17110e;
   --surface-2: #211813;
   --surface-3: #2c2019;
@@ -32,17 +34,32 @@
   --border: rgba(233, 207, 180, 0.14);
   --border-strong: rgba(233, 207, 180, 0.36);
 
-  /* Type */
+  /* Type families */
   --serif: 'Cormorant Garamond', 'Times New Roman', Georgia, serif;
   --display: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
   --sans: 'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* Type scale — six deliberate levels (see typography.css) */
+  --fs-campaign: clamp(3.1rem, 13vw, 5.5rem);   /* hero display, mobile */
+  --fs-display: clamp(2.6rem, 10vw, 4.25rem);   /* section display, mobile */
+  --fs-title: clamp(1.9rem, 6.5vw, 2.6rem);     /* section title */
+  --fs-h3: clamp(1.45rem, 4.6vw, 1.85rem);
+  --fs-lede: clamp(1.15rem, 1.4vw, 1.5rem);
+  --fs-body: 1rem;
+  --fs-caption: 0.8rem;
+  --fs-utility: 0.68rem;
+
+  /* Spacing — exactly three vertical rhythms */
+  --space-tight: clamp(1.75rem, 5vw, 4.5rem);     /* 28px → 72px */
+  --space-standard: clamp(3.5rem, 7.5vw, 7.5rem); /* 56px → 120px */
+  --space-cinematic: clamp(5.75rem, 11vw, 11rem); /* 92px → 176px */
 
   /* Layout */
   --container: 1440px;
   --container-narrow: 1120px;
   --gutter: clamp(1.25rem, 4vw, 4.5rem);
-  --header-h: 4.5rem;
-  --section-y: clamp(5rem, 11vw, 10rem);
+  --col-gap: clamp(0.75rem, 1.6vw, 1.75rem);
+  --header-h: 4rem;
 
   /* Motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -51,13 +68,17 @@
   --dur: 0.7s;
   --dur-slow: 1.2s;
 
-  /* Radii */
+  /* Radii — lacquer objects have almost none */
   --radius-sm: 2px;
-  --radius: 4px;
+  --radius: 3px;
 }
 
 @media (min-width: 1024px) {
   :root {
-    --header-h: 5.25rem;
+    --header-h: 5rem;
+    --fs-campaign: clamp(4rem, 8vw, 9rem);
+    --fs-display: clamp(3.25rem, 5.4vw, 6.25rem);
+    --fs-title: clamp(2.25rem, 2.9vw, 3.4rem);
+    --fs-h3: clamp(1.5rem, 1.7vw, 2rem);
   }
 }

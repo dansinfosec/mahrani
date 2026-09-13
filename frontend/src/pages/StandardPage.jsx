@@ -33,7 +33,7 @@ export default function StandardPage() {
     <>
       <Seo seo={page.seo} />
       {!hasHero ? (
-        <header className="section" style={{ paddingTop: 'calc(var(--header-h) + var(--section-y) * 0.6)', paddingBottom: 0 }}>
+        <header className="section" style={{ paddingTop: 'calc(var(--header-h) + var(--space-tight))', paddingBottom: 0 }}>
           <div className="container">
             <p className="eyebrow">{page.title}</p>
             {page.intro ? (

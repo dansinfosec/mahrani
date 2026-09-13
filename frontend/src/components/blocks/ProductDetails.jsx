@@ -1,12 +1,16 @@
 import { padNumber } from '../../lib/format.js'
 import Eyebrow from '../ui/Eyebrow.jsx'
 import Heading from '../ui/Heading.jsx'
+import MediaReveal from '../ui/MediaReveal.jsx'
 import Picture from '../ui/Picture.jsx'
 import Reveal from '../ui/Reveal.jsx'
 
 /**
- * Specifications as a numbered ledger rather than a table; dimensions as
- * large figures. All values come from the catalog Product.
+ * Specifications as editorial callouts around the product — on desktop odd
+ * rows sit to the left of the object and even rows to the right, with leader
+ * lines pointing at it; on mobile they read as one numbered ledger. The
+ * dimensions follow as large figures along a hairline. Everything comes
+ * from the catalog Product.
  */
 export default function ProductDetails({ anchor_id, eyebrow, heading, intro, product, extra_items = [], image }) {
   if (!product) return null
@@ -14,51 +18,48 @@ export default function ProductDetails({ anchor_id, eyebrow, heading, intro, pro
   const media = image || product.primary_image
 
   return (
-    <section className="section" id={anchor_id || undefined}>
-      <div className="container details__inner">
-        <div className="details__side">
-          <div className="details__head">
-            <Reveal>
-              <Eyebrow>{eyebrow}</Eyebrow>
-            </Reveal>
-            <Heading as="h2" text={heading} className="display" />
-            {intro ? (
-              <Reveal delay={0.15}>
-                <p className="muted">{intro}</p>
-              </Reveal>
-            ) : null}
-          </div>
-          {media ? (
-            <Reveal variant="fade" className="details__media">
-              <Picture image={media} sizes="(min-width: 1024px) 24rem, 22rem" />
-            </Reveal>
-          ) : null}
-        </div>
+    <section className="section details bleed" id={anchor_id || undefined}>
+      <div className="details__head">
+        <Reveal>
+          <Eyebrow>{eyebrow}</Eyebrow>
+        </Reveal>
+        <Heading as="h2" text={heading} className="h2" />
+        {intro ? (
+          <Reveal delay={0.15}>
+            <p className="muted measure">{intro}</p>
+          </Reveal>
+        ) : null}
+      </div>
 
-        <div>
-          {product.dimensions ? <Dimensions dimensions={product.dimensions} /> : null}
-          {rows.length ? (
-            <ol className="ledger" aria-label="Specifications">
-              {rows.map((row, index) => (
-                <Reveal as="li" key={`${row.label}-${index}`} className="ledger__row" delay={index * 0.05}>
-                  <span className="ledger__num">{padNumber(index + 1)}</span>
-                  <span className="ledger__cell">
-                    <span className="caps ledger__label">{row.label}</span>
-                    <span className="ledger__value">{row.value}</span>
-                  </span>
-                </Reveal>
-              ))}
-            </ol>
-          ) : null}
-          {product.materials ? (
-            <Reveal delay={0.1}>
-              <p className="details__materials" style={{ marginTop: '2rem' }}>
-                <span className="caps muted">Materials — </span>
-                {product.materials}
-              </p>
+      {media ? (
+        <MediaReveal className="details__media">
+          <Picture image={media} sizes="(min-width: 1024px) 30vw, 70vw" />
+        </MediaReveal>
+      ) : null}
+
+      {rows.length ? (
+        <ol className="callouts" aria-label="Specifications">
+          {rows.map((row, index) => (
+            <Reveal as="li" key={`${row.label}-${index}`} className="callout" delay={index * 0.05}>
+              <span className="callout__num" aria-hidden="true">
+                {padNumber(index + 1)}
+              </span>
+              <span className="callout__label caps">{row.label}</span>
+              <span className="callout__value">{row.value}</span>
             </Reveal>
-          ) : null}
-        </div>
+          ))}
+        </ol>
+      ) : null}
+
+      <div className="details__foot">
+        {product.dimensions ? <Dimensions dimensions={product.dimensions} /> : null}
+        {product.materials ? (
+          <Reveal delay={0.1}>
+            <p className="details__materials caption">
+              <span className="caps">Materials</span> {product.materials}
+            </p>
+          </Reveal>
+        ) : null}
       </div>
     </section>
   )
@@ -72,11 +73,11 @@ function Dimensions({ dimensions }) {
   ].filter(([, value]) => value)
   if (!entries.length) return null
   return (
-    <Reveal as="dl" className="dims" style={{ marginBottom: '2.5rem' }}>
+    <Reveal as="dl" className="dims">
       {entries.map(([label, value]) => (
-        <div key={label}>
+        <div className="dims__item" key={label}>
           <dt className="caps dims__label">{label}</dt>
-          <dd style={{ margin: 0 }}>
+          <dd className="dims__figure">
             <span className="dims__value">
               {value.cm}
               <span className="dims__unit">cm</span>

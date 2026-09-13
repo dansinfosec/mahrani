@@ -1,228 +1,245 @@
 /* =================================================================
-   PRODUCT REVEAL — scroll-driven stage sequence
-   The section is tall (stages × 100vh); the stage viewport is sticky.
-   Stage media is a stack of absolutely positioned layers; today these
-   are still images, later they can be sequences, video or WebGL.
+   STAGE — "Closed. Opened. Illuminated."
+   One viewport, not five: the CMS stages crossfade inside a single large
+   frame; a rail of steps drives it (auto-advancing while in view).
    ================================================================= */
-.reveal {
+.stage {
   position: relative;
-  --reveal-stages: 5;
-  height: calc(var(--reveal-stages) * 100svh);
-  background: linear-gradient(180deg, var(--background-2), var(--background) 30%, var(--background) 70%, var(--background-2));
+  padding-block: var(--space-standard) var(--space-tight);
+  row-gap: 1.75rem;
+  background: linear-gradient(180deg, var(--background-2) 0%, var(--background) 45%, var(--background) 100%);
 }
 
-.reveal__viewport {
-  position: sticky;
-  top: 0;
-  height: 100svh;
+.stage__copy {
+  position: relative;
+  z-index: 2;
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  padding-top: var(--header-h);
+  gap: 1rem;
+}
+
+.stage__intro {
+  max-width: 34ch;
+}
+
+.stage__frame {
+  grid-column: full;
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 4 / 5;
+  max-height: 76svh;
+  width: 100%;
   overflow: hidden;
 }
 
-.reveal__head {
-  padding-top: 1.25rem;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.reveal__heading {
-  font-size: clamp(2rem, 5.5vw, 5.5rem);
-}
-
-.reveal__stage {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 0;
-}
-
-.reveal__halo {
+.stage__halo {
   position: absolute;
-  width: min(80vw, 34rem);
-  aspect-ratio: 1;
+  inset: 8%;
+  z-index: 0;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 217, 166, 0.28), rgba(201, 160, 126, 0.1) 45%, transparent 72%);
-  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 217, 166, 0.3), rgba(201, 160, 126, 0.1) 46%, transparent 72%);
   opacity: 0;
-  transition: opacity 1.2s var(--ease-out);
+  transition: opacity 1.4s var(--ease-out);
+  pointer-events: none;
 }
 
-.reveal__halo--on {
+.stage__halo--on {
   opacity: 1;
 }
 
-.reveal__frame {
-  position: relative;
-  height: min(100%, 62svh);
-  aspect-ratio: 3 / 4;
-  max-width: 100%;
-}
-
-.reveal__layer {
+.stage__layer {
   position: absolute;
   inset: 0;
+  z-index: 1;
   display: grid;
   place-items: center;
   opacity: 0;
-  transform: scale(1.04);
+  transform: scale(1.03);
   transition:
-    opacity 0.9s var(--ease-out),
-    transform 1.6s var(--ease-out);
+    opacity 1s var(--ease-out),
+    transform 1.8s var(--ease-out);
   will-change: opacity, transform;
 }
 
-.reveal__layer--active {
+.stage__layer--active {
+  z-index: 2;
   opacity: 1;
-  transform: scale(1);
+  transform: none;
 }
 
-.reveal__layer img {
-  max-height: 100%;
-  max-width: 100%;
-  width: auto;
-  height: auto;
+.stage__layer img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  -webkit-mask-image: radial-gradient(ellipse 68% 64% at 50% 50%, #000 55%, rgba(0, 0, 0, 0.6) 76%, transparent 98%);
-  mask-image: radial-gradient(ellipse 68% 64% at 50% 50%, #000 55%, rgba(0, 0, 0, 0.6) 76%, transparent 98%);
+  object-position: 50% 50%;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent), linear-gradient(180deg, transparent, #000 12%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent), linear-gradient(180deg, transparent, #000 12%, #000 86%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
 }
 
-.reveal__foot {
-  display: grid;
-  gap: 1rem;
-  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
-  min-height: 7.5rem;
-}
-
-.reveal__caption {
-  font-family: var(--serif);
-  font-size: clamp(1.25rem, 2.4vw, 2rem);
-  line-height: 1.25;
-  color: var(--ivory);
-  max-width: 28ch;
-  text-wrap: balance;
-}
-
-.reveal__rail {
-  display: flex;
-  gap: 1.25rem;
-  align-items: center;
-}
-
-.reveal__dot {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
+.stage__index {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 1rem;
+  z-index: 3;
   color: var(--text-subtle);
-  font-size: 0.62rem;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  transition: color var(--dur-fast);
+  font-variant-numeric: tabular-nums;
 }
 
-.reveal__dot::before {
-  content: '';
-  width: 1.25rem;
-  height: 1px;
-  background: currentColor;
-  transition: width var(--dur) var(--ease-out), background-color var(--dur-fast);
+.stage__foot {
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+  min-width: 0;
 }
 
-.reveal__dot--active {
-  color: var(--accent-light);
+.stage__foot > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
-.reveal__dot--active::before {
-  width: 2.5rem;
-  background: var(--accent);
+.stage__rail {
+  display: flex;
+  contain: paint;
+  gap: 1.5rem;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.reveal__dot-label {
+.stage__rail::-webkit-scrollbar {
   display: none;
 }
 
-.reveal__dot--active .reveal__dot-label {
-  display: inline;
+.stage__step {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.5rem 0 0.9rem;
+  text-align: left;
+  color: var(--text-subtle);
+  white-space: nowrap;
+  transition: color var(--dur-fast);
 }
 
-.reveal__progress {
+.stage__step:hover {
+  color: var(--text-muted);
+}
+
+.stage__step-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.stage__step-label {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.64rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.stage__step-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 1px;
   background: var(--border);
-  position: relative;
 }
 
-.reveal__progress-bar {
+.stage__step-bar::after {
+  content: '';
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 100%;
+  inset: 0;
   background: var(--accent);
+  transform: scaleX(0);
   transform-origin: left;
 }
 
-/* Static fallback (reduced motion or unsupported mode) */
-.reveal--static {
-  height: auto;
+.stage__step--active {
+  color: var(--ivory);
 }
 
-.reveal__static-grid {
-  display: grid;
-  gap: 2rem;
-  padding-block: 2rem 4rem;
+.stage__step--active .stage__step-bar::after {
+  transform: scaleX(1);
+  transition: transform 0.6s var(--ease-out);
 }
 
-.reveal__static-item {
-  display: grid;
-  gap: 1rem;
-  text-align: center;
-  justify-items: center;
+.stage--auto .stage__step--active .stage__step-bar::after {
+  transition: none;
+  animation: stage-progress 4.2s linear forwards;
 }
 
-.reveal__static-item img {
-  max-height: 60vh;
-  width: auto;
-}
-
-@media (min-width: 768px) {
-  .reveal__dot-label {
-    display: inline;
+@keyframes stage-progress {
+  from {
+    transform: scaleX(0);
   }
-
-  .reveal__static-grid {
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  to {
+    transform: scaleX(1);
   }
+}
+
+.stage__caption-wrap {
+  min-height: 3em;
+}
+
+.stage__caption {
+  font-family: var(--serif);
+  font-size: var(--fs-h3);
+  line-height: 1.2;
+  color: var(--ivory);
+  max-width: 26ch;
+  text-wrap: balance;
 }
 
 @media (min-width: 1024px) {
-  .reveal__viewport {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
-    grid-template-rows: 1fr;
-    align-items: center;
-    gap: 2rem;
-    padding-bottom: 0;
+  .stage {
+    padding-block: var(--space-standard) var(--space-tight);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: start;
+    row-gap: 0;
   }
 
-  .reveal__head {
-    padding-top: 0;
-    align-self: center;
+  .stage__copy {
+    grid-column: c 1 / c 6;
+    grid-row: 1;
+    padding-top: 2.5rem;
+    padding-right: 2rem;
   }
 
-  .reveal__stage {
-    height: 100%;
+  .stage__frame {
+    grid-column: c 6 / full-end;
+    grid-row: 1 / span 2;
+    aspect-ratio: 1 / 1;
+    max-height: min(80svh, 800px);
+    justify-self: end;
   }
 
-  .reveal__frame {
-    height: min(100%, 76svh);
+  .stage__index {
+    right: calc(var(--gutter) + 0.5rem);
+    bottom: 1.5rem;
   }
 
-  .reveal__foot {
-    align-self: center;
-    padding-bottom: 0;
+  .stage__foot {
+    grid-column: c 1 / c 6;
+    grid-row: 2;
+    align-self: end;
+    padding-right: 3rem;
+    padding-bottom: 1.5rem;
   }
 
-  .reveal__rail {
+  .stage__rail {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+    gap: 0;
+    overflow: visible;
+  }
+
+  .stage__step {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    align-items: baseline;
+    width: 100%;
+    padding: 0.7rem 0;
   }
 }

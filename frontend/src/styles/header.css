@@ -53,18 +53,18 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
   justify-self: center;
   padding: 0.25rem 0.5rem;
 }
 
 .header__crown {
-  width: 1.75rem;
+  width: 1.4rem;
   color: var(--accent);
 }
 
 .header__wordmark {
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   line-height: 1;
   padding-left: 0.3em; /* optical centering for letter-spacing */
 }

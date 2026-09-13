@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react'
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useInView, useReducedMotion } from 'framer-motion'
 
-import { classNames } from '../../lib/format.js'
+import { classNames, padNumber } from '../../lib/format.js'
 import { parseHeading } from '../../lib/heading.js'
 import { EASE_OUT } from '../../lib/motion.js'
 import Button from '../ui/Button.jsx'
@@ -9,120 +9,96 @@ import Eyebrow from '../ui/Eyebrow.jsx'
 import Heading from '../ui/Heading.jsx'
 import Picture from '../ui/Picture.jsx'
 
+const AUTO_ADVANCE_MS = 4200
+
 /**
- * Scroll-driven product reveal.
+ * "Closed. Opened. Illuminated." — a single-viewport stage.
  *
- * Architecture: the section is `stages × 100vh` tall and the stage viewport is
- * sticky, so scrolling scrubs a 0→1 progress value. Today that progress picks
- * one of the CMS "stages" (still images that crossfade); the same progress
- * value can later drive a WebP frame sequence, a scrubbed <video>, or a
- * Three.js scene — `media_mode` is already exposed by the CMS for that.
+ * The CMS stages crossfade inside one large frame. While the section is in
+ * view the stage advances on its own; choosing a stage stops that. Under
+ * reduced motion nothing auto-advances and stages swap without fading. The
+ * same stage list can later be driven by a frame sequence or video via
+ * `media_mode`, which the CMS already exposes.
  */
-export default function ProductReveal({ anchor_id, eyebrow, heading, intro, media_mode = 'stills', stages = [], product }) {
+export default function ProductReveal({ anchor_id, eyebrow, heading, intro, stages = [], product }) {
   const reduceMotion = useReducedMotion()
   const usable = stages.filter((stage) => stage.image)
-  if (usable.length === 0) return null
-
-  if (reduceMotion || media_mode !== 'stills') {
-    return <StaticReveal anchor_id={anchor_id} eyebrow={eyebrow} heading={heading} intro={intro} stages={usable} product={product} />
-  }
-  return <ScrollReveal anchor_id={anchor_id} eyebrow={eyebrow} heading={heading} intro={intro} stages={usable} product={product} />
-}
-
-function ScrollReveal({ anchor_id, eyebrow, heading, intro, stages, product }) {
   const ref = useRef(null)
+  const inView = useInView(ref, { amount: 0.45 })
   const [active, setActive] = useState(0)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+  const [paused, setPaused] = useState(false)
 
-  useMotionValueEvent(scrollYProgress, 'change', (value) => {
-    const index = Math.min(stages.length - 1, Math.max(0, Math.floor(value * stages.length)))
-    if (index !== active) setActive(index)
-  })
+  const auto = !reduceMotion && !paused && inView && usable.length > 1
 
-  const stage = stages[active]
+  useEffect(() => {
+    if (!auto) return undefined
+    const id = window.setInterval(() => setActive((current) => (current + 1) % usable.length), AUTO_ADVANCE_MS)
+    return () => window.clearInterval(id)
+  }, [auto, usable.length, active])
+
+  if (usable.length === 0) return null
+  const stage = usable[Math.min(active, usable.length - 1)]
+
+  const choose = (index) => {
+    setPaused(true)
+    setActive(index)
+  }
 
   return (
-    <section
-      className="reveal"
-      id={anchor_id || undefined}
-      ref={ref}
-      style={{ '--reveal-stages': stages.length }}
-      aria-label={eyebrow || 'Product reveal'}
-    >
-      <div className="reveal__viewport container">
-        <div className="reveal__head">
-          <Eyebrow>{eyebrow}</Eyebrow>
-          <Heading as="h2" text={heading} className="display reveal__heading" />
-          {intro ? <p className="muted">{intro}</p> : null}
-        </div>
+    <section className={classNames('stage bleed', auto && 'stage--auto')} id={anchor_id || undefined} ref={ref} aria-label={eyebrow || 'Product reveal'}>
+      <div className="stage__copy">
+        <Eyebrow>{eyebrow}</Eyebrow>
+        <Heading as="h2" text={heading} className="display stage__heading" />
+        {intro ? <p className="stage__intro muted">{intro}</p> : null}
+      </div>
 
-        <div className="reveal__stage" aria-live="off">
-          <div className={classNames('reveal__halo', stage.glow && 'reveal__halo--on')} aria-hidden="true" />
-          <div className="reveal__frame">
-            {stages.map((item, index) => (
-              <div key={index} className={classNames('reveal__layer', index === active && 'reveal__layer--active')} aria-hidden={index !== active}>
-                <Picture image={item.image} sizes="(min-width: 1024px) 40vw, 80vw" priority={index === 0} />
-              </div>
-            ))}
+      <div className="stage__frame">
+        <div className={classNames('stage__halo', stage.glow && 'stage__halo--on')} aria-hidden="true" />
+        {usable.map((item, index) => (
+          <div key={index} className={classNames('stage__layer', index === active && 'stage__layer--active')} aria-hidden={index !== active}>
+            <Picture image={item.image} sizes="(min-width: 1024px) 46vw, 100vw" priority={index === 0} />
           </div>
-        </div>
+        ))}
+        <span className="stage__index caps" aria-hidden="true">
+          {padNumber(active + 1)} / {padNumber(usable.length)}
+        </span>
+      </div>
 
-        <div className="reveal__foot">
-          <div className="reveal__progress" aria-hidden="true">
-            <motion.div className="reveal__progress-bar" style={{ scaleX: scrollYProgress }} />
-          </div>
-          <ol className="reveal__rail" aria-label="Stages">
-            {stages.map((item, index) => (
-              <li key={index} className={classNames('reveal__dot', index === active && 'reveal__dot--active')} aria-current={index === active ? 'step' : undefined}>
-                <span className="reveal__dot-label">{item.label}</span>
-              </li>
-            ))}
-          </ol>
-          <AnimatePresence mode="wait">
+      <div className="stage__foot">
+        <ol className="stage__rail" aria-label="Stages">
+          {usable.map((item, index) => (
+            <li key={index}>
+              <button
+                type="button"
+                className={classNames('stage__step', index === active && 'stage__step--active')}
+                aria-current={index === active ? 'step' : undefined}
+                onClick={() => choose(index)}
+              >
+                <span className="stage__step-num">{padNumber(index + 1)}</span>
+                <span className="stage__step-label">{item.label}</span>
+                <span className="stage__step-bar" aria-hidden="true" key={`${index}-${active}`} />
+              </button>
+            </li>
+          ))}
+        </ol>
+
+        <div className="stage__caption-wrap">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.p
               key={active}
-              className="reveal__caption"
-              initial={{ opacity: 0, y: 12 }}
+              className="stage__caption"
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.5, ease: EASE_OUT }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+              transition={{ duration: 0.55, ease: EASE_OUT }}
             >
               <CaptionText text={stage.caption || stage.label} />
             </motion.p>
           </AnimatePresence>
-          {product ? (
-            <Button variant="text" href={product.url}>
-              Discover {product.name}
-            </Button>
-          ) : null}
         </div>
-      </div>
-    </section>
-  )
-}
 
-function StaticReveal({ anchor_id, eyebrow, heading, intro, stages, product }) {
-  return (
-    <section className="reveal reveal--static section" id={anchor_id || undefined}>
-      <div className="container">
-        <div className="reveal__head">
-          <Eyebrow>{eyebrow}</Eyebrow>
-          <Heading as="h2" text={heading} className="display reveal__heading" animate={false} />
-          {intro ? <p className="muted">{intro}</p> : null}
-        </div>
-        <ol className="reveal__static-grid">
-          {stages.map((item, index) => (
-            <li key={index} className="reveal__static-item">
-              <Picture image={item.image} sizes="(min-width: 768px) 30vw, 90vw" />
-              <span className="caps muted">{item.label}</span>
-              <p className="reveal__caption">
-                <CaptionText text={item.caption || item.label} />
-              </p>
-            </li>
-          ))}
-        </ol>
         {product ? (
-          <Button variant="text" href={product.url}>
+          <Button variant="text" href={product.url} className="stage__more">
             Discover {product.name}
           </Button>
         ) : null}

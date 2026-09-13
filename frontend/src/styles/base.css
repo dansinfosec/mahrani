@@ -17,12 +17,25 @@ body {
   color: var(--text);
   font-family: var(--sans);
   font-weight: 300;
-  font-size: 1rem;
-  line-height: 1.65;
+  font-size: var(--fs-body);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+}
+
+/* Film grain: a single tiled SVG noise, fixed, very faint. Cheap to composite
+   and it keeps large dark areas from reading as flat digital black. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
 }
 
 img,
@@ -87,7 +100,16 @@ figure {
   outline: none;
 }
 
-/* Layout helpers */
+/* =================================================================
+   LAYOUT SYSTEM
+   .container       centred content column
+   .section         vertical rhythm — standard by default, --tight or
+                    --cinematic where a moment earns it
+   .bleed           12-column editorial grid whose outer tracks run to the
+                    viewport edge, so imagery can bleed while copy stays on
+                    the column grid. Line names:
+                      full-start | content-start = c 1 … c 13 = content-end | full-end
+   ================================================================= */
 .container {
   width: min(100% - var(--gutter) * 2, var(--container));
   margin-inline: auto;
@@ -98,17 +120,52 @@ figure {
 }
 
 .section {
-  padding-block: var(--section-y);
+  padding-block: var(--space-standard);
 }
 
 .section--tight {
-  padding-block: calc(var(--section-y) * 0.6);
+  padding-block: var(--space-tight);
+}
+
+.section--cinematic {
+  padding-block: var(--space-cinematic);
+}
+
+.section--flush-top {
+  padding-top: 0;
+}
+
+.section--flush-bottom {
+  padding-bottom: 0;
+}
+
+.bleed {
+  --col: calc((min(100% - var(--gutter) * 2, var(--container)) - var(--col-gap) * 11) / 12);
+  --edge: calc(var(--gutter) - var(--col-gap));
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(var(--edge), 1fr)
+    [content-start] repeat(12, [c] minmax(0, var(--col)))
+    [c content-end] minmax(var(--edge), 1fr)
+    [full-end];
+  column-gap: var(--col-gap);
+}
+
+.bleed > * {
+  grid-column: content;
+  min-width: 0;
 }
 
 .hairline {
   border: 0;
   height: 1px;
   background: var(--border);
+}
+
+/* Vertical type — used sparingly for campaign labels */
+.vertical {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
 }
 
 .sr-only {

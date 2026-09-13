@@ -1,61 +1,70 @@
-/* Editorial type scale. Serif carries the campaign voice; sans carries UI. */
+/* =================================================================
+   TYPE HIERARCHY — six levels, each with its own job
+     .t-campaign  hero display        serif, caps + italic, 13vw → 8vw
+     .display     section display     serif, tight leading
+     .h2          section title       serif
+     .h3          sub-title           serif
+     body / .lede body                sans / serif lede
+     .caps        utility label       sans, tracked caps
+     .eyebrow     label with index    sans, tracked caps, rose gold
+   Serif carries the campaign voice; sans carries UI.
+   ================================================================= */
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.9rem;
-  font-family: var(--sans);
-  font-weight: 500;
-  font-size: 0.6875rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.eyebrow::before {
-  content: '';
-  width: 1.75rem;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.7;
-}
-
-.eyebrow--plain::before {
-  display: none;
-}
-
+.t-campaign,
 .display-xl,
 .display,
 .h2,
 .h3 {
   font-family: var(--serif);
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ivory);
   text-wrap: balance;
 }
 
+.t-campaign {
+  font-size: var(--fs-campaign);
+  line-height: 0.9;
+  letter-spacing: -0.005em;
+}
+
+.t-campaign .caps-line {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.t-campaign .italic-line {
+  display: block;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--accent-light);
+  padding-left: 0.28em;
+  letter-spacing: -0.01em;
+}
+
 .display-xl {
-  font-size: clamp(3.25rem, 9.5vw, 10rem);
-  line-height: 0.95;
+  font-size: calc(var(--fs-display) * 1.2);
+  line-height: 0.92;
   letter-spacing: -0.015em;
 }
 
 .display {
-  font-size: clamp(2.75rem, 6.6vw, 7rem);
-  line-height: 1;
+  font-size: var(--fs-display);
+  line-height: 0.96;
   letter-spacing: -0.01em;
 }
 
 .h2 {
-  font-size: clamp(2.25rem, 4.6vw, 4.75rem);
+  font-size: var(--fs-title);
   line-height: 1.02;
 }
 
 .h3 {
-  font-size: clamp(1.625rem, 2.6vw, 2.5rem);
+  font-size: var(--fs-h3);
   line-height: 1.1;
 }
 
+.t-campaign em,
 .display-xl em,
 .display em,
 .h2 em,
@@ -76,9 +85,9 @@
 
 .lede {
   font-family: var(--serif);
-  font-size: clamp(1.25rem, 1.8vw, 1.625rem);
-  line-height: 1.45;
-  font-weight: 300;
+  font-size: var(--fs-lede);
+  line-height: 1.4;
+  font-weight: 400;
   color: var(--text);
 }
 
@@ -86,24 +95,73 @@
   color: var(--text-muted);
 }
 
+.measure {
+  max-width: 34ch;
+}
+
+.measure--wide {
+  max-width: 44ch;
+}
+
 .caps {
   font-family: var(--sans);
   font-weight: 500;
-  font-size: 0.72rem;
-  letter-spacing: 0.24em;
+  font-size: var(--fs-utility);
+  letter-spacing: 0.26em;
   text-transform: uppercase;
+}
+
+.caption {
+  font-family: var(--sans);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* Eyebrow: a quiet tracked label. The dash variant is opt-in so the same
+   "dash + caps" motif doesn't open every section. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: var(--fs-utility);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.eyebrow--dash::before {
+  content: '';
+  width: 1.75rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+/* Huge editorial numerals (01 / 02 / 03) */
+.numeral {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-variant-numeric: lining-nums;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(201, 160, 126, 0.55);
+  user-select: none;
 }
 
 /* Rich text from Wagtail */
 .prose {
   color: var(--text-muted);
   font-size: 1.0625rem;
-  line-height: 1.75;
-  max-width: 38rem;
+  line-height: 1.7;
+  max-width: 36rem;
 }
 
 .prose p + p {
-  margin-top: 1.25em;
+  margin-top: 1.1em;
 }
 
 .prose a {
@@ -147,11 +205,23 @@
 .lines__line {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
 }
 
 .lines__inner {
   display: block;
   will-change: transform;
+}
+
+/* Staggered display: second line steps right, third line steps back — the
+   classic editorial cascade. Opt-in via .lines--stagger. */
+@media (min-width: 768px) {
+  .lines--stagger .lines__line:nth-child(2) {
+    padding-left: 0.9em;
+  }
+
+  .lines--stagger .lines__line:nth-child(3) {
+    padding-left: 0.35em;
+  }
 }

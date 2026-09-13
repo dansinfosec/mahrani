@@ -1,6 +1,6 @@
 .footer {
   border-top: 1px solid var(--border);
-  padding: clamp(3.5rem, 8vw, 6rem) 0 max(2rem, env(safe-area-inset-bottom));
+  padding: var(--space-tight) 0 max(1.5rem, env(safe-area-inset-bottom));
   background: var(--background-2);
 }
 
@@ -58,7 +58,7 @@
 }
 
 .footer__bottom {
-  margin-top: clamp(2.5rem, 6vw, 4rem);
+  margin-top: var(--space-tight);
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
   display: flex;
