@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { padNumber } from '../../lib/format.js'
 import Eyebrow from '../ui/Eyebrow.jsx'
 import Heading from '../ui/Heading.jsx'
@@ -13,9 +15,10 @@ import Reveal from '../ui/Reveal.jsx'
  * from the catalog Product.
  */
 export default function ProductDetails({ anchor_id, eyebrow, heading, intro, product, extra_items = [], image }) {
+  const [mediaBroken, setMediaBroken] = useState(false)
   if (!product) return null
   const rows = [...(product.specifications || []), ...extra_items]
-  const media = image || product.primary_image
+  const media = mediaBroken ? null : image || product.primary_image
 
   return (
     <section className="section details bleed" id={anchor_id || undefined}>
@@ -33,7 +36,7 @@ export default function ProductDetails({ anchor_id, eyebrow, heading, intro, pro
 
       {media ? (
         <MediaReveal className="details__media">
-          <Picture image={media} sizes="(min-width: 1024px) 30vw, 70vw" />
+          <Picture image={media} sizes="(min-width: 1024px) 30vw, 70vw" onError={() => setMediaBroken(true)} />
         </MediaReveal>
       ) : null}
 

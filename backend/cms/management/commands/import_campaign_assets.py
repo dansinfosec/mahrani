@@ -13,6 +13,7 @@ Idempotent: re-running updates the existing Wagtail images in place.
     python manage.py import_campaign_assets --dry-run
 """
 
+import io
 from pathlib import Path
 
 from django.conf import settings
@@ -26,6 +27,17 @@ from catalog.models import Product
 from cms.models import HomePage, SiteSettings
 
 CAMPAIGN_DIR = Path(settings.BASE_DIR) / "seed" / "campaign"
+COLLAGE = Path(settings.BASE_DIR) / "seed" / "maharani-campaign.jpg"
+
+# The one asset that stays a real reference crop: the dimensions diagram.
+# Cropped from the collage (fractions of width/height) exactly as seed_maharani
+# does, so a missing or replaced file on the media volume can be restored.
+DIMENSIONS = {
+    "box": (0.712, 0.070, 0.972, 0.415),
+    "file": "maharani-dimensions.jpg",
+    "title": "Case dimensions figure",
+    "alt": "MAHARANI case shown with height, width and depth measurements: 14.7 by 7.1 by 3.0 centimetres.",
+}
 
 ASSETS = {
     "hero-desktop": {
@@ -110,6 +122,7 @@ class Command(BaseCommand):
             raise CommandError(f"Missing campaign files in {CAMPAIGN_DIR}: {', '.join(missing)}")
 
         images = self.import_images(dry)
+        images["dimensions"] = self.import_dimensions(dry)
         if dry:
             self.stdout.write("Dry run: no changes written.")
             transaction.set_rollback(True)
@@ -143,6 +156,30 @@ class Command(BaseCommand):
             image.renditions.all().delete()
             images[key] = image
         return images
+
+    def import_dimensions(self, dry: bool):
+        """Re-crop the dimensions figure from the collage and (re)attach its file."""
+        if not COLLAGE.exists():
+            self.stdout.write(self.style.WARNING(f"Collage missing at {COLLAGE}; dimensions figure left as is."))
+            return Image.objects.filter(title=DIMENSIONS["title"]).first()
+        with PILImage.open(COLLAGE) as source:
+            width, height = source.size
+            left, top, right, bottom = DIMENSIONS["box"]
+            crop = source.convert("RGB").crop((int(left * width), int(top * height), int(right * width), int(bottom * height)))
+            buffer = io.BytesIO()
+            crop.save(buffer, format="JPEG", quality=90, optimize=True)
+        existing = Image.objects.filter(title=DIMENSIONS["title"]).first()
+        self.stdout.write(f"{'Updated' if existing else 'Created'} image: {DIMENSIONS['title']} ({crop.size[0]}x{crop.size[1]})")
+        if dry:
+            return existing
+        image = existing or Image(title=DIMENSIONS["title"])
+        if hasattr(image, "description"):
+            image.description = DIMENSIONS["alt"]
+        image.file.save(DIMENSIONS["file"], ContentFile(buffer.getvalue()), save=False)
+        image.width, image.height = crop.size
+        image.save()
+        image.renditions.all().delete()
+        return image
 
     def assign_product(self, images: dict):
         product = Product.objects.filter(slug="maharani-luxury-makeup-kit").first() or Product.objects.first()
@@ -193,6 +230,8 @@ class Command(BaseCommand):
                     key = f"layer-{int(layer_value.get('number') or 0):02d}"
                     if key in images:
                         layer_value["image"] = image_block(key, layer_value.get("image"))
+            elif kind == "product_details" and images.get("dimensions"):
+                value["image"] = image_block("dimensions", value.get("image"))
             elif kind == "spotlight":
                 value["image"] = image_block("led-mirror", value.get("image"))
             elif kind == "product_purchase":

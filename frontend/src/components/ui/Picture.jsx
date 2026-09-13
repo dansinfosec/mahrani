@@ -19,6 +19,7 @@ export default function Picture({
   style,
   decorative = false,
   sources = [],
+  onError,
 }) {
   if (!image) return null
   const srcSet = buildSrcSet(image)
@@ -37,6 +38,7 @@ export default function Picture({
       fetchPriority={priority ? 'high' : undefined}
       className={className}
       style={style}
+      onError={onError}
     />
   )
 
