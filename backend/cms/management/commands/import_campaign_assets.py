@@ -27,7 +27,7 @@ from wagtail.images.models import Image
 
 from catalog.models import Product
 from cms.images import NAMED_RENDITIONS, RENDITION_WIDTHS
-from cms.models import HomePage, SiteSettings
+from cms.models import HomePage, SiteSettings, StandardPage
 
 CAMPAIGN_DIR = Path(settings.BASE_DIR) / "seed" / "campaign"
 
@@ -159,6 +159,7 @@ class Command(BaseCommand):
         self.assign_product(images)
         if not options["keep_home"]:
             self.assign_home(images)
+        self.assign_standard_pages(images)
         self.assign_settings(images)
         self.warm_renditions(images)
         self.purge_superseded(images)
@@ -338,6 +339,34 @@ class Command(BaseCommand):
         home.og_image = images["full-open"]
         home.save_revision().publish()
         self.stdout.write("Rebuilt home page as the campaign and published.")
+
+    # Block type → campaign asset used on editorial pages (e.g. Our Story), so
+    # no page keeps pointing at the original low-resolution seed crops.
+    STANDARD_PAGE_IMAGES = {
+        "brand_story": ("image", "material"),
+        "image_text": ("image", "full-open"),
+        "spotlight": ("image", "led-mirror"),
+        "cta_section": ("background_image", "thickness"),
+    }
+
+    def assign_standard_pages(self, images: dict):
+        for page in StandardPage.objects.all():
+            body = page.body.raw_data
+            changed = False
+            for block in body:
+                mapping = self.STANDARD_PAGE_IMAGES.get(block["type"])
+                if not mapping:
+                    continue
+                field, key = mapping
+                current = block["value"].get(field)
+                if current is None or (isinstance(current, dict) and not current.get("image")):
+                    continue  # the editor left this image empty on purpose
+                block["value"][field] = {"image": images[key].pk, "alt_text": ""}
+                changed = True
+            if changed:
+                page.body = body
+                page.save_revision().publish()
+                self.stdout.write(f"Reassigned imagery on page: {page.title}")
 
     def assign_settings(self, images: dict):
         for site_settings in SiteSettings.objects.all():
