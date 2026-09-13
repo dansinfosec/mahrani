@@ -48,6 +48,9 @@ if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+# Railway's internal health probe arrives over plain HTTP without
+# X-Forwarded-Proto; a 301 would fail the check, so health paths are exempt.
+SECURE_REDIRECT_EXEMPT = [r"^health/?$", r"^api/v1/health/?$"]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=60 * 60 * 24 * 30)

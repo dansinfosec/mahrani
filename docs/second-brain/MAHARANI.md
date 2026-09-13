@@ -400,7 +400,9 @@ Model produced by this task (details in `docs/deployment/`):
   attach Postgres and set `DATABASE_URL=${{Postgres.DATABASE_URL}}`. `SECRET_KEY must be set` →
   set a 50+ char secret. `DisallowedHost` → add the Railway domain to `ALLOWED_HOSTS` (the health-check host `healthcheck.railway.app` and `RAILWAY_PUBLIC_DOMAIN` are allowed automatically by `production.py`).
 - *Health check failing:* `/health/` must return 200 without DB; if gunicorn is up but health fails,
-  check `PORT` binding (start.sh uses `$PORT`) and that `healthcheckPath` is `/health/`.
+  check `PORT` binding (start.sh uses `$PORT`) and that `healthcheckPath` is `/health/`. The probe uses
+  `Host: healthcheck.railway.app` over plain HTTP, so `production.py` allows that host and exempts the
+  health paths from `SECURE_SSL_REDIRECT` (a 301 or 400 there means those settings regressed).
 - *Frontend shows "The store is resting" / network errors:* browser console → CORS. Ensure
   `CORS_ALLOWED_ORIGINS` contains the exact Vercel origin (scheme + host, no trailing slash) and
   `VITE_API_BASE_URL` points at `https://<railway-domain>` (https, or mixed content is blocked).
