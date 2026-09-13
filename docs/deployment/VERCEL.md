@@ -12,6 +12,13 @@ Repository files involved:
 | `frontend/.env.example` | names of the public `VITE_*` variables |
 | `frontend/src/api/client.js` | reads `VITE_API_BASE_URL`, strips trailing slashes and `/api/v1`, prefixes `/api/v1` |
 
+## Current production state (2026-09-13)
+
+- Project `maharani` (team batterijenplan), production https://maharani-zeta.vercel.app, alias
+  https://maharani-batterijenplan.vercel.app; root directory `frontend`, framework Vite, `npm ci` /
+  `npm run build` / `dist`; Git-connected to `dansinfosec/mahrani` (`main` = production).
+- `VITE_API_BASE_URL=https://backend-production-0805.up.railway.app`, `VITE_SITE_URL=https://maharani-zeta.vercel.app`.
+
 ## Step by step
 
 1. **Import the Git repository.** Vercel dashboard → Add New → Project → Import the GitHub repo.

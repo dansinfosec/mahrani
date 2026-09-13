@@ -348,7 +348,7 @@ npm run build                                  # → dist/
 
 Dev-only QA switch: `?motion=1` forces full motion, `?motion=0` forces reduced motion.
 
-## Deployment
+## Deployment model
 
 Model produced by this task (details in `docs/deployment/`):
 
@@ -362,6 +362,23 @@ Model produced by this task (details in `docs/deployment/`):
   R2/S3), environment variables as listed above.
 - Admin users are created with `python manage.py createsuperuser` in the Railway shell. The seed
   command never creates users when `DEBUG=False`.
+
+## Production deployment (live state, 2026-09-13)
+
+| Item | Value |
+| --- | --- |
+| GitHub repository | https://github.com/dansinfosec/mahrani (branch `main`, initial commit `809a519`) |
+| Frontend (Vercel) | https://maharani-zeta.vercel.app (alias `maharani-batterijenplan.vercel.app`); project `maharani`, root `frontend`, framework Vite, Git-connected to `main` |
+| Backend (Railway) | https://backend-production-0805.up.railway.app — project `maharani` (`3d0147f8-…`), service `backend`, root `backend`, Nixpacks, `sh start.sh`, health `/health/`, region `ams` |
+| Database | Railway PostgreSQL service `Postgres` (image `postgres-ssl:18`), wired as `DATABASE_URL=${{Postgres.DATABASE_URL}}`; production verified `connection.vendor == postgresql` |
+| Media strategy | Railway volume `media` (5 GB) mounted at `/app/media`, `MEDIA_ROOT=/app/media`; Django serves `/media/`. Move to R2/S3 (`AWS_*`) before scaling |
+| Content | `seed_maharani` run once in the container (`railway ssh … -- /opt/venv/bin/python manage.py seed_maharani`); created images, product, home page, Our Story, site settings; **no users** |
+| Admin | No superuser yet — create with `railway ssh --service backend -- /opt/venv/bin/python manage.py createsuperuser` (or Railway → service → Shell) |
+| Status | Backend `/health/` 200, `/api/v1/site|pages|products` 200, CORS allow-origin = Vercel origin, Wagtail admin login + static CSS 200. Frontend routes `/`, `/products/<slug>`, `/our-story/`, `/account`, unknown path → 200 SPA (assets 404 as plain text). |
+
+Production lessons baked into `production.py`: Railway's probe uses `Host: healthcheck.railway.app`
+over plain HTTP, so that host (plus `RAILWAY_PUBLIC_DOMAIN`) is auto-allowed and the health paths are
+exempt from `SECURE_SSL_REDIRECT`. Inside the container the interpreter is `/opt/venv/bin/python`.
 
 ## Known constraints
 

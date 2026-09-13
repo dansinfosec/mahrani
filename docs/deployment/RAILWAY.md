@@ -20,6 +20,13 @@ What the repository already provides:
 | `backend/requirements.txt` | pinned dependency ranges incl. `psycopg[binary]`, `gunicorn`, `whitenoise`, `django-storages[s3]` |
 | `backend/config/settings/production.py` | fails fast without `SECRET_KEY`/`DATABASE_URL`, forces `DEBUG=False`, HTTPS/HSTS, WhiteNoise, optional S3 media |
 
+## Current production state (2026-09-13)
+
+- Project `maharani` → services `backend` (https://backend-production-0805.up.railway.app, region ams) and `Postgres`.
+- Volume `media` mounted at `/app/media`; variables set as in the checklist below; GitHub `dansinfosec/mahrani` `main` auto-deploys.
+- Shell commands run through the CLI: `railway ssh --service backend -- /opt/venv/bin/python manage.py <command>`
+  (the SSH shell does not activate the Nixpacks virtualenv; on Windows Git Bash prefix with `MSYS_NO_PATHCONV=1`).
+
 ## Step by step
 
 1. **Create the Railway project.** Railway dashboard → New Project → Empty project. Name it (e.g. `maharani`).
@@ -45,8 +52,8 @@ What the repository already provides:
    `python manage.py showmigrations | grep "\[ \]"` (should print nothing).
 10. **Confirm the health endpoint.** `curl -i https://<host>/health/` → `200 {"status":"ok"}`.
     Railway's own health check uses the same path (see `railway.json`).
-11. **Create the production superuser.** Service → Shell (or `railway run`):
-    `python manage.py createsuperuser`. There are no default credentials anywhere; the development
+11. **Create the production superuser.** Service → Shell, or from the CLI:
+    `railway ssh --service backend -- /opt/venv/bin/python manage.py createsuperuser`. There are no default credentials anywhere; the development
     seed never creates users when `DEBUG=False`.
 12. **Open the Wagtail admin.** `https://<host>/admin/` → log in. Static assets must load (WhiteNoise).
 13. **Add content.** Either build the home page by hand (Pages → add Home page, set it as the Site root

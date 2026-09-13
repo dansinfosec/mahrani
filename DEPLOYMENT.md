@@ -11,6 +11,8 @@ GitHub repository
 Frontend talks to the backend over HTTPS using `VITE_API_BASE_URL`; the backend allows only the
 frontend origin via `CORS_ALLOWED_ORIGINS`.
 
+Live (2026-09-13): frontend https://maharani-zeta.vercel.app · API https://backend-production-0805.up.railway.app · repo https://github.com/dansinfosec/mahrani
+
 Detailed guides:
 
 - [docs/deployment/RAILWAY.md](docs/deployment/RAILWAY.md) — backend + PostgreSQL step by step
