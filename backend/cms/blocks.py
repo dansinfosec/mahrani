@@ -107,6 +107,11 @@ class SectionBlock(blocks.StructBlock):
         max_length=40,
         help_text="Optional id for in-page links, e.g. 'shop' → #shop.",
     )
+    chapter = blocks.CharBlock(
+        required=False,
+        max_length=4,
+        help_text="Optional campaign chapter number shown as an editorial mark, e.g. '01'.",
+    )
 
 
 
@@ -129,6 +134,27 @@ class HeroBlock(SectionBlock):
     mobile_image = APIImageChooserBlock(
         required=False,
         help_text="Optional portrait (4:5) art direction for phones. Falls back to the main image.",
+    )
+    frames = blocks.ListBlock(
+        ImageBlock(),
+        required=False,
+        default=[],
+        help_text=(
+            "Opening sequence, first to last (closed case → fully revealed), all shot from the same "
+            "camera. The last frame should match the main image. Leave empty for a still hero."
+        ),
+    )
+    mobile_frames = blocks.ListBlock(
+        ImageBlock(),
+        required=False,
+        default=[],
+        help_text="Optional portrait (4:5) opening sequence for phones, first to last. Falls back to the main frames.",
+    )
+    side_label = blocks.CharBlock(
+        required=False, help_text="Short vertical campaign line at the edge, e.g. 'Unlock your radiance'."
+    )
+    add_to_bag = blocks.BooleanBlock(
+        required=False, default=False, help_text="Show an Add to Bag action for the featured product."
     )
     primary_cta = LinkBlock()
     secondary_cta = LinkBlock(required=False)
@@ -243,6 +269,9 @@ class FeatureItemBlock(blocks.StructBlock):
     icon = blocks.ChoiceBlock(choices=FeatureIcon.choices, default=FeatureIcon.SPARKLE)
     title = blocks.CharBlock(max_length=60)
     description = blocks.CharBlock(required=False, max_length=200)
+    link = blocks.CharBlock(
+        required=False, max_length=120, help_text="Optional anchor or path this item links to, e.g. '#light'."
+    )
 
     class Meta:
         icon = "tick"

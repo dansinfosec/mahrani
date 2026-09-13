@@ -8,23 +8,24 @@ import Picture from '../ui/Picture.jsx'
 import Reveal from '../ui/Reveal.jsx'
 
 /**
- * Specifications as editorial callouts around the product — on desktop odd
- * rows sit to the left of the object and even rows to the right, with leader
- * lines pointing at it; on mobile they read as one numbered ledger. The
- * dimensions follow as large figures along a hairline. Everything comes
- * from the catalog Product.
+ * The compact-form chapter. The 16:9 "three centimetres" photograph runs
+ * wide with the real measurements drawn on it as product-design annotations
+ * (the 3 cm stack at the side, the 14.7 × 7.1 cm face beneath), and the
+ * specifications read as a two-column editorial ledger under it. Everything
+ * comes from the catalog Product.
  */
-export default function ProductDetails({ anchor_id, eyebrow, heading, intro, product, extra_items = [], image }) {
+export default function ProductDetails({ anchor_id, chapter, eyebrow, heading, intro, product, extra_items = [], image }) {
   const [mediaBroken, setMediaBroken] = useState(false)
   if (!product) return null
   const rows = [...(product.specifications || []), ...extra_items]
   const media = mediaBroken ? null : image || product.primary_image
+  const dims = product.dimensions
 
   return (
     <section className="section details bleed" id={anchor_id || undefined}>
       <div className="details__head">
         <Reveal>
-          <Eyebrow>{eyebrow}</Eyebrow>
+          <Eyebrow chapter={chapter}>{eyebrow}</Eyebrow>
         </Reveal>
         <Heading as="h2" text={heading} className="h2" />
         {intro ? (
@@ -35,9 +36,30 @@ export default function ProductDetails({ anchor_id, eyebrow, heading, intro, pro
       </div>
 
       {media ? (
-        <MediaReveal className="details__media">
-          <Picture image={media} sizes="(min-width: 1024px) 30vw, 70vw" onError={() => setMediaBroken(true)} />
-        </MediaReveal>
+        <div className="details__object">
+          <MediaReveal className="details__media">
+            <Picture image={media} sizes="(min-width: 1024px) 30vw, 70vw" onError={() => setMediaBroken(true)} />
+          </MediaReveal>
+          {dims ? (
+            <Reveal variant="fade" delay={0.4} className="annot" aria-hidden="true">
+              {dims.depth ? (
+                <span className="annot__rule annot__rule--height">
+                  <span className="annot__value">{dims.depth.cm} cm</span>
+                </span>
+              ) : null}
+              {dims.height ? (
+                <span className="annot__rule annot__rule--width">
+                  <span className="annot__value">{dims.height.cm} cm</span>
+                </span>
+              ) : null}
+              {dims.width ? (
+                <span className="annot__rule annot__rule--depth">
+                  <span className="annot__value">{dims.width.cm} cm</span>
+                </span>
+              ) : null}
+            </Reveal>
+          ) : null}
+        </div>
       ) : null}
 
       {rows.length ? (
@@ -55,7 +77,7 @@ export default function ProductDetails({ anchor_id, eyebrow, heading, intro, pro
       ) : null}
 
       <div className="details__foot">
-        {product.dimensions ? <Dimensions dimensions={product.dimensions} /> : null}
+        {dims ? <Dimensions dimensions={dims} /> : null}
         {product.materials ? (
           <Reveal delay={0.1}>
             <p className="details__materials caption">

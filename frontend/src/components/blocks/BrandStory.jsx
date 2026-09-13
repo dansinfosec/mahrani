@@ -11,7 +11,7 @@ import RichText from '../ui/RichText.jsx'
  * The house. The brand words run as vertical type down the edge of the
  * portrait on desktop and as a small tracked line above it on mobile.
  */
-export default function BrandStory({ anchor_id, words = [], eyebrow, heading, body, image, cta }) {
+export default function BrandStory({ anchor_id, chapter, words = [], eyebrow, heading, body, image, cta }) {
   return (
     <section className="section story bleed" id={anchor_id || undefined}>
       {words.length ? (
@@ -33,7 +33,7 @@ export default function BrandStory({ anchor_id, words = [], eyebrow, heading, bo
 
       <div className="story__copy">
         <Reveal>
-          <Eyebrow>{eyebrow}</Eyebrow>
+          <Eyebrow chapter={chapter}>{eyebrow}</Eyebrow>
         </Reveal>
         <Heading as="h2" text={heading} className="h2" />
         <Reveal delay={0.15}>

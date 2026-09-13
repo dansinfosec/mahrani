@@ -1,32 +1,43 @@
-import { useRef } from 'react'
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 
+import { useCart } from '../../cart/CartContext.jsx'
 import { classNames } from '../../lib/format.js'
 import { parseHeading } from '../../lib/heading.js'
 import { EASE_OUT } from '../../lib/motion.js'
 import { useSite } from '../../site/SiteContext.jsx'
-import { CmsButton } from '../ui/Button.jsx'
+import Button, { CmsButton } from '../ui/Button.jsx'
 import Picture from '../ui/Picture.jsx'
+import HeroSequence from './HeroSequence.jsx'
 
-/**
- * Campaign hero. The CMS tagline ("BEAUTY IN EVERY LAYER") becomes the display
- * statement, set as three lines: first word / middle words in italic / last
- * word. The CMS headline becomes the small editorial line beneath it.
- *
- * Imagery: the main image is the landscape campaign master (product on the
- * right, negative space on the left for type). An optional `mobile_image`
- * (portrait, empty upper band) is art-directed in for phones and tablets.
- */
-function splitTagline(tagline) {
-  const words = String(tagline || '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-  if (words.length === 0) return []
-  if (words.length <= 3) return words.map((word) => [word])
-  return [[words[0]], words.slice(1, -1), [words[words.length - 1]]]
+const MOBILE_QUERY = '(max-width: 1023px)'
+
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(() => (typeof window !== 'undefined' ? window.matchMedia(query).matches : false))
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const apply = () => setMatches(media.matches)
+    apply()
+    media.addEventListener?.('change', apply)
+    return () => media.removeEventListener?.('change', apply)
+  }, [query])
+  return matches
 }
 
+/**
+ * The opening.
+ *
+ * With `frames` (locked-camera stills, closed → fully open) the hero is a
+ * sticky 16:9 stage over a tall track: the case opens by itself in the first
+ * seconds and can be scrubbed by scrolling. Phones get `mobile_frames`
+ * (4:5) when present, else the desktop frames. Under reduced motion the
+ * final open frame is shown as a still; without any frames the landscape
+ * master (or the portrait `mobile_image` on phones) is used.
+ *
+ * Copy: `eyebrow` → campaign label, `tagline` → display statement (line
+ * breaks and _italics_), `headline` → supporting line, `side_label` →
+ * vertical edge line, `add_to_bag` → commerce action for the page's product.
+ */
 export default function Hero({
   anchor_id,
   eyebrow,
@@ -36,112 +47,161 @@ export default function Hero({
   body,
   image,
   mobile_image,
+  frames = [],
+  mobile_frames = [],
+  side_label,
+  add_to_bag = false,
   primary_cta,
   secondary_cta,
   scroll_hint,
+  context,
 }) {
-  const { site } = useSite()
-  const ref = useRef(null)
   const reduceMotion = useReducedMotion()
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', reduceMotion ? '0%' : '10%'])
-  const copyY = useTransform(scrollYProgress, [0, 1], ['0%', reduceMotion ? '0%' : '-6%'])
-  const fadeOut = useTransform(scrollYProgress, [0, 0.6], [1, 0])
+  const isMobile = useMediaQuery(MOBILE_QUERY)
+  const trackRef = useRef(null)
+  const [progress, setProgress] = useState(0)
+  const [replayKey, setReplayKey] = useState(0)
 
-  const displayLines = splitTagline(tagline)
-  const editorialLine = parseHeading(headline)
-  const collaboration = site.collaboration.enabled ? `${site.collaboration.label} ${site.collaboration.partner_name}`.trim() : null
-  const year = new Date().getFullYear()
+  const desktopFrames = frames.filter((frame) => frame && frame.src)
+  const phoneFrames = mobile_frames.filter((frame) => frame && frame.src)
+  const activeFrames = isMobile && phoneFrames.length >= 2 ? phoneFrames : desktopFrames
+  const sequence = !reduceMotion && activeFrames.length >= 2
+  // Still fallback (reduced motion / no frames): the final open frame when the
+  // sequence exists, so nothing essential depends on the animation playing.
+  const finalFrame = activeFrames[activeFrames.length - 1]
+  const still = finalFrame || (isMobile && mobile_image ? mobile_image : image)
 
-  // Under reduced motion the hero simply appears; no entrance choreography.
+  const displayLines = parseHeading(tagline)
+  const supportLines = parseHeading(headline)
+
   const enter = (delay) =>
     reduceMotion
       ? { initial: false }
-      : {
-          initial: { opacity: 0, y: 24 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 1.1, ease: EASE_OUT, delay },
-        }
+      : { initial: { opacity: 0, y: 22 }, animate: { opacity: 1, y: 0 }, transition: { duration: 1.1, ease: EASE_OUT, delay } }
+
+  const revealed = progress > 0.96
 
   return (
     <section
-      className={classNames('hero bleed', mobile_image && 'hero--art-directed')}
+      className={classNames('hero', sequence ? 'hero--sequence' : 'hero--still')}
       id={anchor_id || undefined}
-      ref={ref}
+      ref={trackRef}
       aria-labelledby="hero-title"
     >
-      <motion.div
-        className="hero__media"
-        style={{ y: imageY }}
-        initial={reduceMotion ? false : { opacity: 0, scale: 1.04 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.9, ease: EASE_OUT, delay: 0.15 }}
-      >
-        <Picture
-          image={image}
-          className="hero__image"
-          priority
-          sizes="100vw"
-          sources={mobile_image ? [{ image: mobile_image, media: '(max-width: 1023px)', sizes: '100vw' }] : []}
-        />
+      <div className="hero__sticky">
+        {sequence ? (
+          <HeroSequence
+            key={isMobile ? 'mobile' : 'desktop'}
+            frames={activeFrames}
+            trackRef={trackRef}
+            onProgress={setProgress}
+            replayKey={replayKey}
+            sizes="100vw"
+          />
+        ) : (
+          <motion.div
+            className="hero__stage"
+            initial={reduceMotion ? false : { opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.9, ease: EASE_OUT, delay: 0.15 }}
+          >
+            <div className="hero__frame hero__frame--final">
+              <Picture image={still} className="hero__image" priority sizes="100vw" />
+            </div>
+          </motion.div>
+        )}
         <div className="hero__shade" aria-hidden="true" />
-      </motion.div>
 
-      <motion.div className="hero__copy" style={{ y: copyY }}>
-        {eyebrow || collaboration ? (
-          <motion.p className="hero__label caps" {...enter(0.1)}>
-            <span>{collaboration || eyebrow}</span>
-            <span className="hero__label-rule" aria-hidden="true" />
-            <span className="hero__label-year">{year} Collection</span>
-          </motion.p>
-        ) : null}
-
-        <h1 className="hero__title" id="hero-title">
-          <motion.span className="wordmark hero__wordmark" {...enter(0.2)}>
-            {title}
-          </motion.span>
-          {displayLines.length ? (
-            <span className="t-campaign hero__display">
-              {displayLines.map((line, index) => {
-                const italic = displayLines.length === 3 && index === 1
-                return (
-                  <span className="hero__display-line" key={index}>
-                    <motion.span className={italic ? 'italic-line' : 'caps-line'} {...enter(0.3 + index * 0.1)}>
-                      {line.join(' ')}
-                    </motion.span>
+        <div className="hero__copy bleed">
+          <div className="hero__text">
+            {eyebrow ? (
+              <motion.p className="hero__label caps" {...enter(0.2)}>
+                {eyebrow}
+              </motion.p>
+            ) : null}
+            <h1 className="hero__title" id="hero-title">
+              <motion.span className="wordmark hero__wordmark" {...enter(0.3)}>
+                {title}
+              </motion.span>
+              {displayLines.length ? (
+                <span className="t-campaign hero__display">
+                  {displayLines.map((segments, index) => (
+                    <span className="hero__display-line" key={index}>
+                      <motion.span {...enter(0.45 + index * 0.12)}>
+                        {segments.map((s, j) => (s.italic ? <em key={j}>{s.text}</em> : <span key={j}>{s.text}</span>))}
+                      </motion.span>
+                    </span>
+                  ))}
+                </span>
+              ) : null}
+            </h1>
+            {supportLines.length ? (
+              <motion.p className="hero__line lede" {...enter(0.85)}>
+                {supportLines.map((segments, i) => (
+                  <span key={i}>
+                    {segments.map((s, j) => (s.italic ? <em key={j}>{s.text}</em> : <span key={j}>{s.text}</span>))}
+                    {i < supportLines.length - 1 ? ' ' : null}
                   </span>
-                )
-              })}
-            </span>
+                ))}
+              </motion.p>
+            ) : null}
+            <motion.div className="hero__actions" {...enter(1.05)}>
+              <CmsButton link={primary_cta} size="lg" />
+              {add_to_bag ? <HeroAddToBag product={context?.product} /> : <CmsButton link={secondary_cta} variant="text" />}
+            </motion.div>
+            {body ? (
+              <motion.p className="hero__body caption" {...enter(1.2)}>
+                {body}
+              </motion.p>
+            ) : null}
+          </div>
+
+          {side_label ? (
+            <motion.p className="hero__side caps" {...enter(1.3)}>
+              <span>{side_label}</span>
+              <span className="hero__side-rule" aria-hidden="true" />
+            </motion.p>
           ) : null}
-        </h1>
 
-        {editorialLine.length ? (
-          <motion.p className="hero__line lede" {...enter(0.65)}>
-            {editorialLine.map((segments, i) => (
-              <span key={i}>
-                {segments.map((s, j) => (s.italic ? <em key={j}>{s.text}</em> : <span key={j}>{s.text}</span>))}
-                {i < editorialLine.length - 1 ? ' ' : null}
+          <motion.div className="hero__foot" {...enter(1.4)}>
+            {scroll_hint ? (
+              <span className={classNames('hero__scroll caps', revealed && 'hero__scroll--faded')} aria-hidden="true">
+                {scroll_hint}
+                <span className="hero__scroll-line" />
               </span>
-            ))}
-          </motion.p>
-        ) : null}
-      </motion.div>
-
-      <motion.div className="hero__actions" {...enter(0.8)}>
-        <CmsButton link={primary_cta} size="lg" />
-        <CmsButton link={secondary_cta} variant="text" />
-      </motion.div>
-
-      <motion.aside className="hero__meta" {...enter(0.9)}>
-        {body ? <p className="hero__body caption">{body}</p> : null}
-        {scroll_hint ? (
-          <motion.span className="hero__scroll caps" style={{ opacity: fadeOut }} aria-hidden="true">
-            <span className="hero__scroll-line" />
-            {scroll_hint}
-          </motion.span>
-        ) : null}
-      </motion.aside>
+            ) : null}
+            {sequence ? (
+              <button
+                type="button"
+                className={classNames('hero__replay caps', !revealed && 'hero__replay--hidden')}
+                onClick={() => setReplayKey((key) => key + 1)}
+                tabIndex={revealed ? 0 : -1}
+              >
+                <span className="hero__replay-icon" aria-hidden="true" />
+                Replay
+              </button>
+            ) : null}
+          </motion.div>
+        </div>
+      </div>
     </section>
+  )
+}
+
+function HeroAddToBag({ product }) {
+  const cart = useCart()
+  const { site } = useSite()
+  const target = product || site.featured_product
+  if (!target) return null
+  const canBuy = !target.availability || ['in_stock', 'low_stock'].includes(target.availability.status)
+  return (
+    <Button
+      variant="text"
+      onClick={() => cart.addItem({ slug: target.slug, quantity: 1 })}
+      disabled={!canBuy || cart.pending}
+      aria-busy={cart.pending}
+    >
+      {cart.pending ? 'Adding…' : canBuy ? 'Add to bag' : 'Sold out'}
+    </Button>
   )
 }

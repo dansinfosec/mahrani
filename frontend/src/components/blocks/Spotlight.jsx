@@ -15,7 +15,7 @@ import RichText from '../ui/RichText.jsx'
  * scrolls into view — the one light effect the site allows itself.
  * Highlights render as two hairlined lines of copy, not cards.
  */
-export default function Spotlight({ anchor_id, eyebrow, heading, body, image, glow = 'warm', highlights = [], cta }) {
+export default function Spotlight({ anchor_id, chapter, eyebrow, heading, body, image, glow = 'warm', highlights = [], cta }) {
   return (
     <section className={classNames('section spotlight bleed', glow === 'none' && 'spotlight--no-glow')} id={anchor_id || undefined}>
       {glow !== 'none' ? (
@@ -43,7 +43,7 @@ export default function Spotlight({ anchor_id, eyebrow, heading, body, image, gl
 
       <div className="spotlight__copy">
         <Reveal>
-          <Eyebrow>{eyebrow}</Eyebrow>
+          <Eyebrow chapter={chapter}>{eyebrow}</Eyebrow>
         </Reveal>
         <Heading as="h2" text={heading} className="display-xl spotlight__heading" />
       </div>

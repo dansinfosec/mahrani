@@ -44,9 +44,11 @@ const BLOCKS = {
  * the CMS having to repeat it.
  */
 function deriveContext(blocks) {
-  const withProduct = blocks.find((block) => block.value?.product?.primary_image)
+  const purchase = blocks.find((block) => block.type === 'product_purchase' && block.value?.product)
+  const withProduct = purchase || blocks.find((block) => block.value?.product?.primary_image)
   const hero = blocks.find((block) => block.type === 'hero' && block.value?.image)
   return {
+    product: purchase?.value.product || null,
     productImage: withProduct?.value.product.primary_image || hero?.value.image || null,
   }
 }

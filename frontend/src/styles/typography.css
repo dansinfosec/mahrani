@@ -132,6 +132,18 @@
   color: var(--accent);
 }
 
+.eyebrow__chapter {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--accent-light);
+  padding-right: 0.9rem;
+  border-right: 1px solid var(--border-strong);
+}
+
 .eyebrow--dash::before {
   content: '';
   width: 1.75rem;

@@ -9,7 +9,7 @@ import Reveal from '../ui/Reveal.jsx'
  * The climax of the page: the object at full height on one side, the offer on
  * the other. Same PurchasePanel as the product page — only the stage differs.
  */
-export default function ProductPurchase({ anchor_id, eyebrow, heading, product, image, show_shipping = true, note }) {
+export default function ProductPurchase({ anchor_id, chapter, eyebrow, heading, product, image, show_shipping = true, note }) {
   if (!product) return null
   const media = image || product.primary_image
   return (
@@ -23,7 +23,7 @@ export default function ProductPurchase({ anchor_id, eyebrow, heading, product, 
       <div className="purchase__panel">
         <div className="purchase__head">
           <Reveal>
-            <Eyebrow>{eyebrow}</Eyebrow>
+            <Eyebrow chapter={chapter}>{eyebrow}</Eyebrow>
           </Reveal>
           <Heading as="h2" text={heading} className="display purchase__heading" />
         </div>

@@ -25,30 +25,16 @@ export default function Header({ transparent = false }) {
       {site.announcement.enabled ? <div className="announcement">{site.announcement.text}</div> : null}
       <header className={classNames('header', solid && 'header--solid', site.announcement.enabled && 'header--static')}>
         <div className="container header__inner">
-          <button
-            type="button"
-            className="header__menu"
-            aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
-            onClick={() => setMenuOpen(true)}
-          >
-            <span className="header__menu-lines" aria-hidden="true">
-              <span />
-              <span />
-            </span>
-            Menu
-          </button>
+          <Link to="/" className="header__brand" aria-label={`${site.brand_name} home`}>
+            <Crown className="header__crown" />
+            <span className="wordmark header__wordmark">{site.brand_name}</span>
+          </Link>
 
           <nav className="header__nav" aria-label="Primary">
             {site.navigation.map((link) => (
               <NavItem key={link.label + link.href} link={link} />
             ))}
           </nav>
-
-          <Link to="/" className="header__brand" aria-label={`${site.brand_name} home`}>
-            <Crown className="header__crown" />
-            <span className="wordmark header__wordmark">{site.brand_name}</span>
-          </Link>
 
           <div className="header__utils">
             <button
@@ -65,6 +51,20 @@ export default function Header({ transparent = false }) {
             <button type="button" className="header__util" onClick={cart.open} aria-haspopup="dialog" aria-expanded={cart.isOpen}>
               Bag <span className="header__bag-count">({cart.cart.item_count})</span>
             </button>
+          <button
+            type="button"
+            className="header__menu"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            onClick={() => setMenuOpen(true)}
+          >
+            <span className="header__menu-lines" aria-hidden="true">
+              <span />
+              <span />
+            </span>
+            Menu
+          </button>
+
           </div>
         </div>
       </header>

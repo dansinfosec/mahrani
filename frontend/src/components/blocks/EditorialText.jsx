@@ -12,7 +12,7 @@ import RichText from '../ui/RichText.jsx'
  * BlockRenderer as `context.productImage`) so type and object read as one
  * composition rather than a centred text block.
  */
-export default function EditorialText({ anchor_id, eyebrow, heading, body, alignment = 'left', size = 'display', context }) {
+export default function EditorialText({ anchor_id, chapter, eyebrow, heading, body, alignment = 'left', size = 'display', context }) {
   const crop = alignment === 'left' && size === 'display' ? context?.productImage : null
 
   return (
@@ -22,7 +22,7 @@ export default function EditorialText({ anchor_id, eyebrow, heading, body, align
     >
       <div className="editorial__head">
         <Reveal>
-          <Eyebrow>{eyebrow}</Eyebrow>
+          <Eyebrow chapter={chapter}>{eyebrow}</Eyebrow>
         </Reveal>
         <Heading
           as="h2"

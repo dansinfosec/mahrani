@@ -10,14 +10,14 @@ import Reveal from '../ui/Reveal.jsx'
  * with the layer numeral set huge behind the imagery. Layers come from the
  * product via the CMS block, so copy and imagery change without touching React.
  */
-export default function DrawerShowcase({ anchor_id, eyebrow, heading, intro, layers = [] }) {
+export default function DrawerShowcase({ anchor_id, chapter, eyebrow, heading, intro, layers = [] }) {
   if (!layers.length) return null
   return (
     <section className="section layers bleed" id={anchor_id || undefined}>
       <div className="layers__head">
         <div>
           <Reveal>
-            <Eyebrow>{eyebrow}</Eyebrow>
+            <Eyebrow chapter={chapter}>{eyebrow}</Eyebrow>
           </Reveal>
           <Heading as="h2" text={heading} className="display" />
         </div>
