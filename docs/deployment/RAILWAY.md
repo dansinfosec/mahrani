@@ -69,7 +69,7 @@ Names only. Generate `SECRET_KEY` with `python -c "import secrets; print(secrets
 | `DJANGO_SETTINGS_MODULE` | yes | `config.settings.production` |
 | `SECRET_KEY` | yes | 50+ random characters (production rejects short/default keys) |
 | `DATABASE_URL` | yes | `${{Postgres.DATABASE_URL}}` (must be `postgres://`; SQLite is refused) |
-| `ALLOWED_HOSTS` | yes | `maharani-api.up.railway.app,api.yourdomain.com` |
+| `ALLOWED_HOSTS` | yes | `maharani-api.up.railway.app,api.yourdomain.com` (production settings also allow `healthcheck.railway.app` and the injected `RAILWAY_PUBLIC_DOMAIN` automatically) |
 | `WAGTAILADMIN_BASE_URL` | yes | `https://maharani-api.up.railway.app` |
 | `FRONTEND_URL` | yes | `https://your-site.vercel.app` (or custom domain) |
 | `CORS_ALLOWED_ORIGINS` | yes | `https://your-site.vercel.app,https://www.yourdomain.com` |

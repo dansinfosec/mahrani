@@ -398,7 +398,7 @@ Model produced by this task (details in `docs/deployment/`):
 
 - *Railway deploy crash-loops at start:* open deploy logs. `ImproperlyConfigured: DATABASE_URL` →
   attach Postgres and set `DATABASE_URL=${{Postgres.DATABASE_URL}}`. `SECRET_KEY must be set` →
-  set a 50+ char secret. `DisallowedHost` → add the Railway domain to `ALLOWED_HOSTS`.
+  set a 50+ char secret. `DisallowedHost` → add the Railway domain to `ALLOWED_HOSTS` (the health-check host `healthcheck.railway.app` and `RAILWAY_PUBLIC_DOMAIN` are allowed automatically by `production.py`).
 - *Health check failing:* `/health/` must return 200 without DB; if gunicorn is up but health fails,
   check `PORT` binding (start.sh uses `$PORT`) and that `healthcheckPath` is `/health/`.
 - *Frontend shows "The store is resting" / network errors:* browser console → CORS. Ensure

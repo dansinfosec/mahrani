@@ -9,9 +9,19 @@ silently degrading (no SQLite fallback, no default SECRET_KEY).
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F401,F403
-from .base import LOGGING, SECRET_KEY, STORAGES, env
+from .base import ALLOWED_HOSTS, LOGGING, SECRET_KEY, STORAGES, env
 
 DEBUG = False
+
+# Railway probes the container with Host: healthcheck.railway.app and injects
+# the service's public/private domains; allow them alongside ALLOWED_HOSTS.
+for _host in (
+    "healthcheck.railway.app",
+    env("RAILWAY_PUBLIC_DOMAIN", default=""),
+    env("RAILWAY_PRIVATE_DOMAIN", default=""),
+):
+    if _host and _host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host)
 
 if SECRET_KEY == "insecure-dev-key-change-me" or len(SECRET_KEY) < 32:
     raise ImproperlyConfigured("SECRET_KEY must be set to a long random value in production.")
